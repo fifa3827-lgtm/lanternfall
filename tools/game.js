@@ -37,7 +37,7 @@ function audio() {
     const comp = AC.createDynamicsCompressor(); comp.threshold.value = -12; comp.knee.value = 14; comp.ratio.value = 3; comp.attack.value = .002; comp.release.value = .12; comp.connect(AC.destination);
     MASTER = AC.createGain(); MASTER.gain.value = soundOn() ? 1 : 0; MASTER.connect(comp);
     OUT = AC.createGain(); OUT.gain.value = 1; OUT.connect(MASTER);
-    SAM = AC.createGain(); SAM.gain.value = .45; SAM.connect(OUT);   // 사물놀이 효과음 버스
+    SAM = AC.createGain(); SAM.gain.value = .7; SAM.connect(OUT);    // 효과음(팡) 버스. 16.3: .45→.7 「터지는 효과음이 좀 더 컸으면」
     MUS = AC.createGain(); MUS.gain.value = .0001; MUS.connect(MASTER);
     AMB = AC.createGain(); AMB.gain.value = .0001; AMB.connect(MASTER);
     // 잔향: 소리를 밤공기에 퍼지게 한다 (만든 임펄스, 2.8초)
