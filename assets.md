@@ -130,6 +130,52 @@
 배경은 거의 검정에 가까운 짙은 남색 먹빛 하나를 꽉 채운다. 별, 달, 글자, 테두리 없음. 등불은 그림 높이의 55% 정도. 정사각형 그림.
 ```
 
+## 10. 축하 색종이 (판을 깼을 때 뿌려지는 조각) — 받을 예정
+
+지금은 코드가 사각형 종잇조각(`.scrap`)을 뿌린다. 제미나이 그림으로 바꾸면 조각마다 한지 결과 오방색이 살아난다. 조각 하나하나를 따로 잘라 쓰므로 **서로 떨어져** 있어야 한다.
+
+```
+첨부한 등불 그림과 같은 화풍(한지에 수묵과 옅은 채색, 부드러운 종이 질감)으로, 잔치 때 뿌리는 색종이 조각들을 그려 줘. 조각은 모두 열두 개, 서로 겹치지 않고 넉넉히 떨어져 격자처럼 흩어 놓는다. 모양은 제각각: 길쭉한 띠, 네모, 마름모, 꽃잎 모양, 둥근 것. 색은 오방색(빨강, 파랑, 노랑, 흰빛에 가까운 옅은 회색, 검은빛이 아닌 짙은 남색)과 금빛. 조각마다 살짝 구부러지거나 비틀려서 공중에 떠 있는 느낌. 그림자 없음, 빛 번짐 없음, 배경은 순백 하나로 꽉 채운다. 글자, 테두리 없음. 정사각형 그림.
+```
+
+넣는 법: `art_bg.py`로 흰 배경을 지우고 덩어리마다 따로 저장(`art/confetti/*.webp`) → 판을 깰 때 `.scrap` 대신 이 그림들을 무작위로 골라 흩뿌린다(회전하며 떨어짐).
+
+## 11. 불티 (등불이 터질 때 튀는 불꽃) — 받을 예정
+
+```
+검은 배경에 촛불에서 튀는 작은 불티 하나를 그려 줘. 가운데는 거의 흰빛에 가까운 노란 점, 그 둘레로 주황빛이 부드럽게 번지고 바깥은 어둠으로 사라진다. 아래쪽으로 짧고 가느다란 빛 꼬리가 하나. 그림 전체 크기의 40% 정도. 별, 글자, 테두리 없음. 배경은 순검정 하나. 정사각형 그림.
+```
+
+한 장 더: 같은 문장에서 "아래쪽으로 짧고 가느다란 빛 꼬리가 하나"를 "꼬리 없이 둥글게, 둘레에 아주 작은 불티 점 네댓 개"로 바꾼다. 넣는 법: 검은 배경 그림은 `mix-blend-mode: screen`으로 얹으면 검정이 사라지고 빛만 남는다. 터질 때 조각과 함께 불티 3~5개가 튀어 오른 뒤 떨어진다.
+
+## 12. 강물 — 받을 예정
+
+지금 강물은 코드로 그린 색띠와 반사(`-webkit-box-reflect`)다. 그림으로 바꾸면 물결 질감이 생긴다.
+
+```
+밤의 강물 표면만 그려 줘. 위에서 살짝 내려다본 각도, 화면 가득 검푸른 물결. 물결은 잔잔하고 가로로 길게 흐르며, 군데군데 등불빛이 비친 주황과 금빛의 길고 흔들리는 반사가 세로로 늘어진다. 화풍은 첨부한 등불과 같은 한지 수묵 채색. 강기슭, 등불 자체, 달, 별, 글자, 테두리 없음. 가로로 긴 그림(가로:세로 = 3:1). 왼쪽 끝과 오른쪽 끝이 이어져 반복해도 티가 안 나게.
+```
+
+넣는 법: `art/river.webp`로 저장 → `.water` 배경으로 깔고 아주 천천히 가로로 흐르게 한다(반복). 등불 반사는 그대로 위에 얹는다.
+
+
+### 10~12 영어판 (같은 내용, 영어가 더 잘 나오면 이걸로)
+
+10 색종이:
+```
+Twelve festival confetti pieces, drawn in the same style as the attached lantern (Korean hanji paper, ink and light watercolor, soft paper texture). Pieces do not touch: spread them out like a loose grid. Varied shapes: long ribbons, squares, diamonds, petal shapes, round dots. Colors: Korean obangsaek — red, blue, yellow, very pale grey-white, deep navy — plus gold. Each piece slightly curled or twisted as if floating. No shadows, no glow, no text, no border. Solid pure white background. Square image.
+```
+11 불티:
+```
+A single tiny candle spark on a pure black background. Near-white yellow core, soft orange glow around it fading into darkness, one short thin trail of light downward. The spark fills about 40% of the frame. No stars, no text, no border. Square image.
+```
+(둘째 장: "one short thin trail of light downward" → "no trail, round, with four or five tiny spark dots around it")
+
+12 강물:
+```
+Night river surface only, seen from slightly above, filling the whole frame with deep blue-black water. Calm ripples flow horizontally; here and there long wavering vertical reflections of orange and gold lantern light. Same style as the attached lantern: Korean hanji paper, ink and light color wash. No riverbank, no lanterns themselves, no moon, no stars, no text, no border. Wide image, 3:1. Left and right edges should tile seamlessly.
+```
+
 ## 예비: 색 변주 (코드 변주가 어색할 때만)
 
 ```
@@ -160,7 +206,27 @@
 
 **받음(시험판 9)**: ch1~ch5 모두 들어옴. 길이 2:00~3:38, 평균 -19dB로 고르고 끝은 조용히 사라진다. 끝난 뒤 다시 시작할 때 코드가 2.5초 페이드인을 건다(`game.js` `loadTrack`). 게임 안 세기는 `TRACK_VOL`(.8) × 배경음 버스(.5). 합성 가락은 파일이 없을 때만 나온다.
 
-## 음악 2차 (국악 장단) — 받음, 시험판 11.2부터 씀
+## 음악 4차 (신나는 타악 배경음) — 받을 예정, 지금 프롬프트
+
+「효과음은 국악기(꽹과리·장구·북·징)로, 배경음은 그것과 어울리는 신나는 곡, 국악이 아니어도 됨」. 게임은 파도마다 배경음의 반박자에 맞춰 터뜨리므로(`design.md` 박자 맞춤) 곡은 **박자가 또렷하고 일정한 템포**여야 한다. 파일은 `music/ch1~5.mp3`에 덮어쓰고, 받은 뒤 `python3 tools/beats.py`를 돌려 `music/beats.json`을 갱신한다.
+
+공통 조건(모든 프롬프트에 이미 들어 있음): 가사 없음 · 템포 일정(steady tempo, no tempo changes) · 강한 4분음표 박(clear beat) · 꽹과리·태평소 같은 날카로운 고음 악기는 곡에 넣지 않음(효과음이 그 자리를 맡음) · 2분 안팎 · 시작·끝 조용히.
+
+| 파일 | 장 | 템포 | 프롬프트 (그대로 복사) |
+| --- | --- | --- | --- |
+| ch1.mp3 | 첫 밤 | 96 | `Upbeat Korean fusion instrumental, 96 bpm steady tempo, janggu and buk groove with warm electric bass and gayageum riff, bright lantern festival night, cheerful and bouncy, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
+| ch2.mp3 | 바람 부는 밤 | 104 | `Playful Korean fusion pop instrumental, 104 bpm steady tempo, light buk and janggu percussion, plucked gayageum melody, marimba sparkle, breezy riverside night, uplifting, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
+| ch3.mp3 | 깊은 밤 | 100 | `Driving Korean world-beat instrumental, 100 bpm steady tempo, deep buk drum pulse, janggu, low synth bass, haegeum hook, mysterious mountain temple night but energetic, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
+| ch4.mp3 | 축제의 밤 | 128 | `Festive Korean fusion dance instrumental, 128 bpm steady tempo, fast janggu and buk over four-on-the-floor kick, brass stabs, gayageum riff, village celebration at night, joyful and loud but not harsh, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
+| ch5.mp3 | 새벽 | 112 | `Hopeful Korean fusion instrumental, 112 bpm steady tempo, buk and janggu groove, bright piano and gayageum, strings rising, pale pink dawn after the festival, triumphant and warm, clear beat, no kkwaenggwari, no taepyeongso, no vocals, ends softly, seamless loop` |
+
+검수: 박이 처음부터 끝까지 흔들리지 않는가(수노가 중간에 템포를 바꾸면 버림), 꽹과리 효과음이 얹혔을 때 시끄럽지 않은가, 40초쯤 들었을 때 신나는가.
+
+### 음악 3차 (사물놀이) — 12에서 받아 씀, 4차가 오면 바뀜
+
+배경음이 사물놀이를 맡던 시절의 프롬프트. 효과음이 다시 국악기로 돌아오자 같은 악기끼리 부딪혀 어색해져 4차로 간다.
+
+## 음악 2차 (국악 장단) — 받음, 시험판 11.2~11.3에 씀(3차가 오면 바뀜)
 
 사물놀이 효과음과 지금 곡(가야금 앰비언트)이 안 어울린다고 함. 같은 국악 장단 위에 있는 곡으로 바꾼다. 파일 이름은 그대로 `music/ch1~5.mp3`(덮어쓰기). 공통: 가사 없음, 2분 안팎, 장구는 은은하게(효과음 장구와 겹치지 않게 궁편 위주), 꽹과리·징은 넣지 않음(효과음 몫), 시작·끝 조용히.
 
@@ -196,7 +262,7 @@
 
 **꺼 둔 것**: 불꽃놀이 조각은 웅웅하고 지저분해서 등불 터지는 느낌이 안 났다. `sfx/fireworks/`에 남겨 두고 `game.js`의 `SFX_DIR`을 비워 합성음으로 돌렸다. 다음 파일은 **가깝고 마른 소리**여야 한다: 풍선 터짐(balloon pop), 종이봉투 터짐(paper bag pop), 뽁뽁이(bubble wrap pop) 계열. 잔향·거리감이 있는 야외 녹음은 피한다. 아래는 그때의 기록. 「불꽃놀이 소리 ASMR.mp3」(21.5초) 한 파일로 전부 만들었다. 14.40·16.19·18.48·19.80초의 또렷한 펑 네 번을 등불 크기별로 나누고(낮은 896Hz 펑 → 큰 등불), 음높이를 살짝 옮겨 차이를 벌리고 큰 등불에는 62Hz 쿵을 더했다. 마지막 등불은 18.48초부터 2.9초(펑 두 번과 잔불), 심지는 앞부분 타닥거림 한 조각. 자르는 시각과 조건은 `tools/sfx_cut.py`에 그대로 있다(다른 녹음을 받으면 시각만 바꿔 다시 돌린다). 겉종이(peel)는 파일 없이 합성음 그대로. 게임 안 세기는 팡 .42, 마지막 .75(`game.js` `pop`/`resolve`).
 
-## 국악기 효과음 (시험판 11, 지금 쓰는 것)
+## 국악기 효과음 (시험판 11·13, 지금 쓰는 것)
 
 합성 사물놀이가 「가짜 같다·싸구려」라서 진짜 녹음으로 바꿨다. 사용자가 받은 네 파일(공유마당 등에서):
 

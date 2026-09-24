@@ -31,7 +31,7 @@
   body {
     margin: 0; height: 100%; color: var(--text); font-family: var(--sans);
     background: linear-gradient(var(--sky-top), var(--sky-bot));
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; overflow: hidden; touch-action: manipulation;
   }
   button { font: inherit; cursor: pointer; }
@@ -42,7 +42,8 @@
           background: radial-gradient(ellipse at 50% 50%, rgba(var(--l-glow),.24), transparent 62%); }
 
   /* ---------- constellation ---------- */
-  .sky { width: min(92vw, 460px); height: clamp(70px, 12vh, 120px); position: relative; margin-bottom: 2px; }
+  .sky { width: min(92vw, 460px); height: clamp(72px, 13vh, 130px); position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 1.2vh); z-index: 1; }
+  .play { padding-top: calc(env(safe-area-inset-top, 0px) + clamp(72px, 13vh, 130px) + 1.6vh); display: flex; flex-direction: column; align-items: center; }
   .sky svg { width: 100%; height: 100%; overflow: visible; }
   .sky .edge { stroke: rgba(246,210,122,.55); stroke-width: .35; fill: none; stroke-dasharray: 40; stroke-dashoffset: 40; transition: stroke-dashoffset .9s ease; }
   .sky .edge.on { stroke-dashoffset: 0; }
@@ -52,26 +53,34 @@
   .sky .st.on { fill: #FFF2C6; filter: url(#glow); }
   .sky .st.pop { animation: starpop .7s ease-out; }
   @keyframes starpop { 0% { r: 3.2; } 100% { r: 1.1; } }
-  .sky .name { position: absolute; left: 0; right: 0; bottom: -2px; text-align: center; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--gold); opacity: 0; transition: opacity 1s; }
+  .sky .name { position: absolute; right: 2%; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; letter-spacing: .18em; font-family: var(--serif); font-size: 14px; color: var(--gold); opacity: 0; transition: opacity 1s; text-shadow: 0 0 8px rgba(246,210,122,.35); }
   .sky.complete .name { opacity: .9; }
   .sky.complete .st.on { animation: twinkle 3s ease-in-out infinite; }
   @keyframes twinkle { 50% { opacity: .55; } }
 
   /* ---------- top bar ---------- */
-  .top { width: min(92vw, 460px); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 10px; gap: 8px; }
+  .top { width: min(92vw, 460px); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 14px; gap: 8px; }
   .word { font-family: var(--serif); font-weight: 300; font-size: clamp(22px, 6.4vw, 30px); line-height: 1; justify-self: center; white-space: nowrap; }
   .word em { font-style: italic; color: var(--gold); }
   .nav { justify-self: start; display: flex; align-items: center; font-family: var(--serif); font-size: 16px; color: var(--muted); white-space: nowrap; }
   .nav button { background: none; border: 0; color: var(--muted); font-size: 18px; padding: 0 4px; }
   .nav button[hidden] { visibility: hidden; display: inline; }
   .right { justify-self: end; display: flex; align-items: center; gap: 6px; }
+  .nav button { min-width: 36px; min-height: 40px; font-size: 24px !important; }
   .taps { display: flex; gap: 4px; margin-right: 2px; }
-  .taps i { width: 10px; height: 16px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  .taps i { width: 12px; height: 19px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
             background: radial-gradient(circle at 50% 70%, #FFF3C4, var(--gold) 45%, #E08A3C); box-shadow: 0 0 8px rgba(246,210,122,.7); transition: all .3s; }
   .taps i.used { background: #34333F; box-shadow: none; transform: scale(.8); }
   .icon { background: none; border: 0; color: var(--muted); font-size: 19px; line-height: 1; padding: 2px; display: grid; place-items: center; }
   .snd svg { display: block; } .snd .x { display: none; } .snd.off .x { display: block; } .snd.off .w1, .snd.off .w2 { display: none; } .snd.off { opacity: .55; }
   .tsnd { position: absolute; right: 18px; top: calc(14px + env(safe-area-inset-top, 0px)); z-index: 17; color: #8E8A98; }
+  .tools { display: flex; gap: 22px; justify-content: center; margin: 18px 0 0; position: relative; z-index: 5; }
+  .tool { width: 56px; height: 56px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(22,22,32,.72); color: #D8D1C4;
+          display: grid; place-items: center; font-size: 26px; line-height: 1; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+  .tool:active { transform: scale(.93); }
+  .tool.q { font-family: var(--serif); font-size: 28px; }
+  .tool small { position: absolute; top: 100%; margin-top: 4px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .tool { position: relative; }
   .icon.q { font-family: var(--serif); font-size: 20px; width: 24px; height: 24px; border: 1px solid #45434F; border-radius: 50%; display: grid; place-items: center; padding: 0; }
 
   /* ---------- board & pond ---------- */
@@ -82,8 +91,8 @@
   .haze { position: absolute; left: 50%; bottom: 0; width: 100vw; max-width: 1100px; height: min(46vw, 420px); transform: translateX(-50%); pointer-events: none; z-index: 0;
           background: radial-gradient(ellipse 60% 70% at 50% 100%, rgba(var(--l-glow),.22), rgba(var(--l-glow),.07) 55%, transparent 75%); }
   .board { z-index: 1; }
-  .pond { position: relative; --size: min(92vw, 52vh, 460px); --shore: 40px; padding-bottom: var(--shore); margin-bottom: clamp(40px, 10vh, 110px); }
-  .board { --n: 5; --size: min(92vw, 52vh, 460px); width: var(--size); height: var(--size); position: relative;
+  .pond { position: relative; --size: min(92vw, 50vh, 460px); --shore: 40px; padding-bottom: var(--shore); margin-bottom: 0; }
+  .board { --n: 5; --size: min(92vw, 50vh, 460px); width: var(--size); height: var(--size); position: relative;
            -webkit-box-reflect: below var(--shore) linear-gradient(to bottom, rgba(0,0,0,.5), rgba(0,0,0,.2) 55%, transparent 92%); }
   .board.shake { animation: shake .34s ease; }
   @keyframes shake { 0%,100% { transform: none; } 20% { transform: translate(-4px,3px); } 40% { transform: translate(4px,-3px); } 60% { transform: translate(-3px,-1px); } 80% { transform: translate(2px,2px); } }
@@ -320,12 +329,15 @@
 <div class="warm" id="warm"></div>
 
 <div class="sky" id="sky"></div>
+<div class="play">
 <div class="top">
   <div class="nav"><button id="prev" aria-label="이전 판">‹</button><span id="lvl"></span><button id="next" aria-label="다음 판">›</button></div>
   <button class="word" id="home" aria-label="처음 화면으로">Lantern<em>fall</em></button>
-  <div class="right"><div class="taps" id="taps" aria-label="남은 탭"></div><button class="icon" id="retry" aria-label="다시">↺</button><button class="icon q" id="help" aria-label="규칙 보기">?</button><button class="icon snd" aria-label="소리 끄기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.2L12 18.5v-13L7.2 9.5H4z"/><path class="w1" d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path class="w2" d="M18 6.8a7.4 7.4 0 0 1 0 10.4"/><path class="x" d="M15 9.5l5 5M20 9.5l-5 5"/></svg></button></div>
+  <div class="right"><div class="taps" id="taps" aria-label="남은 탭"></div></div>
 </div>
 <div class="pond"><div class="haze"></div><div class="bank" id="bank"></div><div class="board pre" id="board"></div><div class="water"></div></div>
+<div class="tools"><button class="tool" id="retry" aria-label="이 판 다시">↺<small>다시</small></button><button class="tool q" id="help" aria-label="규칙 보기">?<small>규칙</small></button><button class="tool snd" aria-label="소리 끄기"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.2L12 18.5v-13L7.2 9.5H4z"/><path class="w1" d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path class="w2" d="M18 6.8a7.4 7.4 0 0 1 0 10.4"/><path class="x" d="M15 9.5l5 5M20 9.5l-5 5"/></svg><small>소리</small></button></div>
+</div>
 
 <div class="over" id="over"><div><h3 id="ovT"></h3><p id="ovP"></p><button class="primary" id="ovA"></button><button class="ghost" id="ovB"></button></div></div>
 <div class="cards" id="cards"><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
