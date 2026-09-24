@@ -288,9 +288,11 @@
   .tscrap { z-index: 21; }
   .title .bank, .title .haze { position: absolute; bottom: 17vh; z-index: 11; }
   .title .bank { --img-bank: var(--img-bg1); }
+  /* 인트로 강물(16.6): 게임 화면과 같은 제미나이 물결 그림이 아주 천천히 흐른다. 위는 먹빛으로 기슭과 이어지고 아래로 사라진다 */
   .thorizon { position: absolute; left: 0; right: 0; bottom: 0; height: 17vh; z-index: 12; pointer-events: none;
-    background: repeating-linear-gradient(to bottom, rgba(190,200,255,.05) 0 1px, transparent 1px 8px), linear-gradient(to bottom, rgba(18,18,27,.55), var(--sky-bot) 70%);
-    border-top: 1px solid rgba(255,255,255,.06); animation: ripple 6s linear infinite; }
+    background: linear-gradient(to bottom, rgba(8,8,13,.95), rgba(8,8,13,.5) 22%, rgba(255,150,80,.05) 50%, var(--sky-bot) 100%), var(--img-river) 0 0 / 1400px auto repeat-x;
+    -webkit-mask-image: linear-gradient(to bottom, #000 60%, rgba(0,0,0,.35)); mask-image: linear-gradient(to bottom, #000 60%, rgba(0,0,0,.35));
+    animation: ripple 90s linear infinite; }
   .tcenter { position: absolute; left: 0; right: 0; top: 30%; z-index: 15; text-align: center; pointer-events: none; }
   .tcenter h1 { margin: 0; font-family: var(--serif); font-weight: 300; font-size: clamp(54px, 16vw, 92px); line-height: .95; letter-spacing: .01em;
     text-shadow: 0 0 40px rgba(255,190,120,.35); animation: logo 1.6s cubic-bezier(.2,.7,.2,1) both .15s; }
