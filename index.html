@@ -603,7 +603,7 @@ function samulClear() {
   }
   duck(); clearTimeout(duckT); duckT = setTimeout(() => { if (AC) MUS.gain.setTargetAtTime(.5, AC.currentTime, .8); }, 3400);
   let j; do { j = Math.floor(Math.random() * JANGDAN.length); } while (j === lastJD); lastJD = j;
-  const JD = JANGDAN[j], bt = BEATS['ch' + (SCENE + 1)];
+  const JD = JANGDAN[j], bt = beatSeg();
   const half = bt ? 30 / bt.bpm : .16, b = Math.min(.24, Math.max(.11, half * JD.b));
   const t0 = AC.currentTime + nextTickMs(60) / 1000;
   const slots = JD.s.split(' '); const n = slots.length;
@@ -645,8 +645,16 @@ let SCENE = 0, nextBeat = 0, beat = 0, nextOwl = 0, nextCrick = 0, nextChime = 0
 // 수노(Suno) 곡: music/ch1.mp3 … ch5.mp3 가 있으면 그것을 틀고, 없으면 아래 합성 가락이 대신 흐른다.
 // 리듬: 곡마다 박자(bpm)와 첫 박 위치(offset)를 music/beats.json에서 읽어, 연쇄의 파도를 8분음표 자리에 맞춘다
 let BEATS = {}; fetch('music/beats.json').then(r => r.ok ? r.json() : {}).then(j => { BEATS = j; }).catch(() => {});
-function nextTickMs(minMs) {   // 지금부터 최소 minMs 뒤인 다음 격자(박의 절반)까지의 ms. 곡이 없으면 minMs 그대로
-  const b = BEATS['ch' + (SCENE + 1)];
+// 지금 곡 시각의 박자 구간(수노 곡은 템포가 조금 흔들려 30초 단위로 따로 잰다)
+function beatSeg() {
+  const b = BEATS['ch' + (SCENE + 1)]; if (!b) return null;
+  if (!b.segs || !curTrack) return b;
+  const t = curTrack.el.currentTime; let s = b.segs[0];
+  for (const x of b.segs) if (t >= x.from) s = x;
+  return s;
+}
+function nextTickMs(minMs) {
+  const b = beatSeg();
   if (!curTrack || !b || curTrack.el.paused) return minMs;
   const grid = 30 / b.bpm, t = curTrack.el.currentTime, target = t + minMs / 1000;
   const k = Math.ceil((target - b.offset) / grid - 1e-4), tick = b.offset + k * grid;

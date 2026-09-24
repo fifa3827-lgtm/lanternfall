@@ -210,21 +210,27 @@ Night river surface only, seen from slightly above, filling the whole frame with
 
 **받음(시험판 9)**: ch1~ch5 모두 들어옴. 길이 2:00~3:38, 평균 -19dB로 고르고 끝은 조용히 사라진다. 끝난 뒤 다시 시작할 때 코드가 2.5초 페이드인을 건다(`game.js` `loadTrack`). 게임 안 세기는 `TRACK_VOL`(.8) × 배경음 버스(.5). 합성 가락은 파일이 없을 때만 나온다.
 
-## 음악 4차 (신나는 타악 배경음) — 받을 예정, 지금 프롬프트
+## 음악 4차 (신나는 타악 배경음) — 받음, 시험판 15에 씀
 
-「효과음은 국악기(꽹과리·장구·북·징)로, 배경음은 그것과 어울리는 신나는 곡, 국악이 아니어도 됨」. 게임은 파도마다 배경음의 반박자에 맞춰 터뜨리므로(`design.md` 박자 맞춤) 곡은 **박자가 또렷하고 일정한 템포**여야 한다. 파일은 `music/ch1~5.mp3`에 덮어쓰고, 받은 뒤 `python3 tools/beats.py`를 돌려 `music/beats.json`을 갱신한다.
+「효과음은 국악기(꽹과리·장구·북·징)로, 배경음은 그것과 어울리는 신나는 곡, 국악이 아니어도 됨」 + 「지금 배경음은 중국풍」. 게임은 파도마다 배경음의 반박자에 맞춰 터뜨리므로(`design.md` 박자 맞춤) 곡은 **박자가 또렷하고 일정한 템포**여야 한다. 파일은 `music/ch1~5.mp3`에 덮어쓰고, 받은 뒤 `python3 tools/beats.py`를 돌려 `music/beats.json`을 갱신한다.
 
-공통 조건(모든 프롬프트에 이미 들어 있음): 가사 없음 · 템포 일정(steady tempo, no tempo changes) · 강한 4분음표 박(clear beat) · 꽹과리·태평소 같은 날카로운 고음 악기는 곡에 넣지 않음(효과음이 그 자리를 맡음) · 2분 안팎 · 시작·끝 조용히.
+**중국풍을 피하는 요령**: 수노는 "Korean traditional"만 쓰면 가야금·해금 가락을 중국 5음계(얼후·구정 느낌)로 뭉개 버린다. 그래서 ① 가락 악기를 아예 빼고 **장구·북 장단 + 현대 악기(베이스·신스·피아노·브라스)**만 쓰거나, ② 가락을 쓰려면 **한국 장단 이름과 시김새(떠는 소리, 흘러내리는 소리), 메나리토리**를 적고 중국 악기·중국 5음계를 금지 목록에 넣는다. 아래 프롬프트는 ①을 기본으로 하고 ②를 조금만 섞었다. 셋 다 공통으로 `no erhu, no guzheng, no pipa, no dizi, no Chinese pentatonic melody` 가 들어간다.
+
+공통 조건: 가사 없음 · 템포 일정(steady tempo) · 강한 박(clear beat) · 꽹과리·태평소 없음(효과음이 맡음) · 2분 안팎 · 시작·끝 조용히.
 
 | 파일 | 장 | 템포 | 프롬프트 (그대로 복사) |
 | --- | --- | --- | --- |
-| ch1.mp3 | 첫 밤 | 96 | `Upbeat Korean fusion instrumental, 96 bpm steady tempo, janggu and buk groove with warm electric bass and gayageum riff, bright lantern festival night, cheerful and bouncy, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
-| ch2.mp3 | 바람 부는 밤 | 104 | `Playful Korean fusion pop instrumental, 104 bpm steady tempo, light buk and janggu percussion, plucked gayageum melody, marimba sparkle, breezy riverside night, uplifting, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
-| ch3.mp3 | 깊은 밤 | 100 | `Driving Korean world-beat instrumental, 100 bpm steady tempo, deep buk drum pulse, janggu, low synth bass, haegeum hook, mysterious mountain temple night but energetic, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
-| ch4.mp3 | 축제의 밤 | 128 | `Festive Korean fusion dance instrumental, 128 bpm steady tempo, fast janggu and buk over four-on-the-floor kick, brass stabs, gayageum riff, village celebration at night, joyful and loud but not harsh, clear beat, no kkwaenggwari, no taepyeongso, no vocals, quiet intro and outro, seamless loop` |
-| ch5.mp3 | 새벽 | 112 | `Hopeful Korean fusion instrumental, 112 bpm steady tempo, buk and janggu groove, bright piano and gayageum, strings rising, pale pink dawn after the festival, triumphant and warm, clear beat, no kkwaenggwari, no taepyeongso, no vocals, ends softly, seamless loop` |
+| ch1.mp3 | 첫 밤 | 96 | `Upbeat Korean janggu drum groove instrumental, gutgeori rhythm feel, 96 bpm steady tempo, janggu and buk drums locked with a warm electric bass and soft Rhodes piano chords, light hand claps, modern lo-fi funk, no melody instrument solos, cheerful lantern festival night, clear beat, no kkwaenggwari, no taepyeongso, no erhu, no guzheng, no pipa, no dizi, no Chinese pentatonic melody, no vocals, quiet intro and outro, seamless loop` |
+| ch2.mp3 | 바람 부는 밤 | 104 | `Playful Korean percussion pop instrumental, semachi 3-beat swing feel, 104 bpm steady tempo, janggu and buk groove, marimba and plucked synth hook using a simple Korean menari-tori folk scale with sliding grace notes, breezy riverside night, uplifting, clear beat, no kkwaenggwari, no taepyeongso, no erhu, no guzheng, no pipa, no dizi, no Chinese pentatonic melody, no vocals, quiet intro and outro, seamless loop` |
+| ch3.mp3 | 깊은 밤 | 100 | `Driving Korean drum and bass instrumental, 100 bpm steady tempo, deep buk drum pulse and fast janggu patterns over a dark synth bass, sparse piano stabs, mysterious mountain temple at night but energetic, mostly rhythm, no melody solos, clear beat, no kkwaenggwari, no taepyeongso, no erhu, no guzheng, no pipa, no dizi, no Chinese pentatonic melody, no vocals, quiet intro and outro, seamless loop` |
+| ch4.mp3 | 축제의 밤 | 128 | `Powerful Korean drum ensemble instrumental, jajinmori rhythm feel, 128 bpm steady tempo, many janggu and big buk drums layered like a drum corps, deep cinematic sub bass and a pulsing synth arpeggio, rolling build-ups, energetic village festival night, epic and joyful but not pop, no melody instrument solos, clear beat, no kkwaenggwari, no taepyeongso, no brass, no saxophone, no accordion, no trot, no ppongjjak, no disco, no erhu, no guzheng, no pipa, no dizi, no Chinese pentatonic melody, no vocals, quiet intro and outro, seamless loop` |
+| ch5.mp3 | 새벽 | 112 | `Hopeful Korean percussion and piano instrumental, 112 bpm steady tempo, buk and janggu groove with bright piano chords and rising strings, a short daegeum bamboo flute phrase with wide Korean vibrato only at the climax, pale pink dawn after the festival, triumphant and warm, clear beat, no kkwaenggwari, no taepyeongso, no erhu, no guzheng, no pipa, no dizi, no Chinese pentatonic melody, no vocals, ends softly, seamless loop` |
 
-검수: 박이 처음부터 끝까지 흔들리지 않는가(수노가 중간에 템포를 바꾸면 버림), 꽹과리 효과음이 얹혔을 때 시끄럽지 않은가, 40초쯤 들었을 때 신나는가.
+ch4 주의: 처음 프롬프트(브라스 스탭 + 네 박 킥 + 펑키 베이스 + 축제)는 **트로트**로 나왔다. 「Korean + 브라스 + 댄스」 조합이 수노에서 트로트로 굳는 듯. 그래서 브라스·펑키 베이스를 빼고 북 군단 + 시네마틱 베이스 + 신스 아르페지오로 바꿨고 `no brass, no trot, no ppongjjak, no disco`를 넣었다.
+
+**받음(시험판 15)**: 다섯 곡 모두 2:00 안팎, 평균 -16~-18dB. 잰 템포 ch1 95.4 · ch2 105.0 · ch3 100.0 · ch4 128.6(127.7→131로 조금 빨라짐) · ch5 111.9. ch1~3은 끝이 안 사라져서 마지막 4초 페이드아웃을 걸어 다시 인코딩했다(ch4·5는 원래 조용히 끝남). 옛 2차 곡은 `music/v3/`에 남김(깃허브에는 안 올림).
+
+검수: 박이 처음부터 끝까지 흔들리지 않는가, **가락이 중국풍으로 들리지 않는가**, **트로트로 들리지 않는가**(들리면 그 곡만 다시 뽑되 가락 악기 언급을 지운다), 꽹과리 효과음이 얹혔을 때 시끄럽지 않은가, 40초쯤 들었을 때 신나는가.
 
 ### 음악 3차 (사물놀이) — 12에서 받아 씀, 4차가 오면 바뀜
 
