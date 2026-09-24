@@ -93,7 +93,7 @@ const pick = n => { const a = SFX[n], b = SFX[n + 'b']; return b && Math.random(
 function pop(size, wave, dt = 0) {
   if (!AC) return; const t = AC.currentTime + dt;
   const buf = pick('pop' + size);
-  if (buf) { const rate = (1 + (PENT[Math.min(wave, PENT.length - 1)] - 1) * .28) * (0.97 + Math.random() * .06); playBuf(buf, t, .75, rate, OUT, .1); return; }
+  if (buf) { const rate = 0.97 + Math.random() * .06, vol = .68 + Math.min(wave, 6) * .03; playBuf(buf, t, vol, rate, OUT, .1); return; }
   const base = (330 - size * 55) * PENT[Math.min(wave, PENT.length - 1)] * KEYS[SCENE];
   const b = tone('triangle', base * 1.6, base, t, .35, .3); tone('sine', base * 3, 0, t, .5, .07); b.connect(VERB);
   noise(t, .09, 2400 + size * 400, .5 + size * .15);           // 종이 찢는 소리
@@ -107,8 +107,8 @@ function resolve() {
   [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone('sine', f * k, 0, t + .35 + i * .09, .9, .05).connect(VERB));   // 반짝이 꼬리
   tone('sine', 90, 40, t, .4, .4); noise(t, .25, 1800, .7);
 }
-const soft = () => { if (!AC) return; if (SFX.peel) playBuf(SFX.peel, AC.currentTime, .7); else tone('sine', 700, 420, AC.currentTime, .16, .14); };
-const click = () => { if (AC) { tone('sine', 1250, 900, AC.currentTime, .07, .07); } };
+const soft = () => { if (!AC) return; const t = AC.currentTime; if (SFX.peel) { playBuf(SFX.peel, t, .7); return; } noise(t, .12, 2600, .22); noise(t + .03, .1, 5500, .07, 'highpass'); noise(t, .08, 500, .14, 'lowpass'); };
+const click = () => { if (AC) { const t = AC.currentTime; noise(t, .035, 3200, .12); noise(t, .06, 900, .08, 'lowpass'); } };
 const fizz = () => { if (!AC) return; if (SFX.fuse) playBuf(SFX.fuse, AC.currentTime, .5); else noise(AC.currentTime, .28, 5000, .25, 'highpass'); };
 const ting = () => { if (!AC) return; const t = AC.currentTime; tone('sine', 1568, 0, t, 1.4, .12).connect(VERB); tone('sine', 2093, 0, t + .06, 1.2, .08).connect(VERB); };
 const sad = () => { if (AC) { const t = AC.currentTime; tone('triangle', 311, 233, t, .6, .16).connect(VERB); tone('triangle', 233, 196, t + .22, .8, .12).connect(VERB); } };
@@ -175,6 +175,16 @@ function makeBed(S) {    // 계속 깔리는 소리: 물결(낮은 잡음이 천
   if (S.wind) layer(700, 'bandpass', .045, .07);
   return { g, src };
 }
+function hoot(f0, f1, t, dur, vol, pan) {   // 새 울음: 떨림 + 숨
+  const o = AC.createOscillator(), g = AC.createGain(), lfo = AC.createOscillator(), lg = AC.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + dur);
+  lfo.frequency.value = 6 + Math.random() * 2; lg.gain.value = f0 * .012; lfo.connect(lg).connect(o.frequency);
+  g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(vol, t + dur * .25); g.gain.linearRampToValueAtTime(vol * .7, t + dur * .7); g.gain.linearRampToValueAtTime(.0001, t + dur);
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = f0 * 1.6;
+  let n = o.connect(lp).connect(g); if (AC.createStereoPanner) { const p = AC.createStereoPanner(); p.pan.value = pan; n = n.connect(p); }
+  n.connect(AMB); n.connect(VERB); o.start(t); lfo.start(t); o.stop(t + dur + .05); lfo.stop(t + dur + .05);
+  noise(t, dur, f0, vol * .5, 'bandpass', AMB);
+}
 function pluck(f, t, vol, pan) {   // 가야금 같은 뜯는 소리
   const o = AC.createOscillator(), o2 = AC.createOscillator(), g = AC.createGain(), lp = AC.createBiquadFilter();
   o.type = 'triangle'; o2.type = 'sine'; o.frequency.value = f; o2.frequency.value = f * 2.01;
@@ -216,14 +226,19 @@ function tickSound() {
   }
   if (S.crick && t > nextCrick) {               // 풀벌레: 높은 음이 빠르게 서너 번 떨림
     const f = 4200 + Math.random() * 900, pan = Math.random() * 1.6 - .8, reps = 3 + (Math.random() * 3 | 0);
-    for (let i = 0; i < reps; i++) tone('sine', f, 0, t + .05 + i * .055, .035, .012 * S.crick, AMB, pan);
+    for (let i = 0; i < reps; i++) {
+      const n = AC.createBufferSource(), bp = AC.createBiquadFilter(), g = AC.createGain(), st = t + .05 + i * .055;
+      n.buffer = NOISE; bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 18;
+      g.gain.setValueAtTime(.0001, st); g.gain.exponentialRampToValueAtTime(.09 * S.crick, st + .006); g.gain.exponentialRampToValueAtTime(.0001, st + .04);
+      let o = n.connect(bp).connect(g); if (AC.createStereoPanner) { const pp = AC.createStereoPanner(); pp.pan.value = pan; o = o.connect(pp); }
+      o.connect(AMB); n.start(st, Math.random()); n.stop(st + .05);
+    }
     nextCrick = t + .35 + Math.random() * 1.1;
   }
   if (S.owl && t > nextOwl) {                   // 소쩍새: "소-쩍" 두 음, 두세 번
     if (nextOwl) { const pan = Math.random() * 1.2 - .6, n = 2 + (Math.random() * 2 | 0), base = 1050 + Math.random() * 80;
       for (let i = 0; i < n; i++) { const s = t + .1 + i * 1.35;
-        tone('sine', base, base * .97, s, .28, .045 * S.owl, AMB, pan).connect(VERB);
-        tone('sine', base * .86, base * .8, s + .36, .22, .04 * S.owl, AMB, pan).connect(VERB); } }
+        hoot(base, base * .97, s, .28, .045 * S.owl, pan); hoot(base * .86, base * .8, s + .36, .22, .04 * S.owl, pan); } }
     nextOwl = t + 14 + Math.random() * 16;
   }
   if (S.chime && t > nextChime) {               // 풍경: 쇠 종 여러 배음
@@ -502,7 +517,7 @@ function leaf(from, path) {
   path.forEach((q, k) => { if (G.mirrors.has(q)) setTimeout(() => { const m = G.mirrors.get(q).el; m.classList.remove('flash'); void m.offsetWidth; m.classList.add('flash'); ting2(); }, DUR * (k + 1)); });
   setTimeout(() => { p.style.opacity = '0'; }, DUR*reach); setTimeout(() => p.remove(), DUR*reach + 200);
 }
-const ting2 = () => { if (AC) tone('sine', 2400, 1900, AC.currentTime, .12, .05); };
+const ting2 = () => { if (!AC) return; const t = AC.currentTime; [1, 2.76].forEach((m, i) => tone('sine', 1900 * m, 0, t, .5 - i * .2, .025 / (i + 1)).connect(VERB)); };
 // 큰 잠꾸러기가 뒤척임: 한 번 견딘 뒤 보통 잠든 등불이 된다
 function stir(q) {
   const S = G.sleep.get(q), el = S.el; el.classList.remove('big'); el.classList.add('stir');
