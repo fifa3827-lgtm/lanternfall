@@ -160,6 +160,22 @@
 
 **받음(시험판 9)**: ch1~ch5 모두 들어옴. 길이 2:00~3:38, 평균 -19dB로 고르고 끝은 조용히 사라진다. 끝난 뒤 다시 시작할 때 코드가 2.5초 페이드인을 건다(`game.js` `loadTrack`). 게임 안 세기는 `TRACK_VOL`(.8) × 배경음 버스(.5). 합성 가락은 파일이 없을 때만 나온다.
 
+## 음악 2차 (국악 장단) — 받음, 시험판 11.2부터 씀
+
+사물놀이 효과음과 지금 곡(가야금 앰비언트)이 안 어울린다고 함. 같은 국악 장단 위에 있는 곡으로 바꾼다. 파일 이름은 그대로 `music/ch1~5.mp3`(덮어쓰기). 공통: 가사 없음, 2분 안팎, 장구는 은은하게(효과음 장구와 겹치지 않게 궁편 위주), 꽹과리·징은 넣지 않음(효과음 몫), 시작·끝 조용히.
+
+| 파일 | 장 | 프롬프트 |
+| --- | --- | --- |
+| ch1.mp3 | 첫 밤 | `Korean traditional gugak instrumental, gayageum melody over a soft janggu gutgeori rhythm (12/8, slow), warm and gentle night, lantern festival by a river, no kkwaenggwari, no gong, no vocals, seamless loop` |
+| ch2.mp3 | 바람 부는 밤 | `Korean gugak instrumental, daegeum flute and gayageum, light janggu jungmori rhythm, breezy and flowing, slightly brighter, no kkwaenggwari, no gong, no vocals, seamless loop` |
+| ch3.mp3 | 깊은 밤 | `Korean gugak instrumental, geomungo and ajaeng low drones, very sparse slow janggu, deep mountain temple night, mysterious, no kkwaenggwari, no gong, no vocals, seamless loop` |
+| ch4.mp3 | 축제의 밤 | `Korean gugak festive instrumental, haegeum and piri melody, lively janggu and buk jajinmori rhythm, joyful village festival night, moderate volume, no kkwaenggwari, no vocals, seamless loop` |
+| ch5.mp3 | 새벽 | `Korean gugak instrumental, daegeum and gayageum, gentle janggu gutgeori, pale dawn, hopeful and resolving, soft ending, no kkwaenggwari, no gong, no vocals, seamless loop` |
+
+받은 곡: 길이 2:21~3:20, 평균 -18~-20dB로 고름. ch4만 끝이 뚝 끊겨(-21dB) 마지막 4초에 페이드아웃을 넣어 다시 인코딩했다.
+
+코드 쪽: 연쇄가 터지는 동안 배경음을 .5→.14로 잠깐 낮춘다(`duck()`, 1.4초 뒤 되돌림). 판을 깬 한 마디 동안은 3.2초.
+
 ## 효과음 (파일)
 
 `sfx/` 에 아래 이름으로 넣으면 게임이 그것을 쓰고, 없는 것은 합성음이 대신 난다. 곡과 달리 **수노는 효과음에 약하다** — 짧은 소리는 일레븐랩스 Sound Effects(무료 한도 있음)나 프리사운드(freesound.org, 검색어 `paper pop`, `paper lantern burst`, `paper bag pop`)가 낫다. 어디서 받든 상관없고, 받은 원본을 그대로 주면 Claude가 `tools/sfx.py`로 앞 무음을 자르고 크기를 맞춰 넣는다.
@@ -176,9 +192,24 @@
 
 검수: 팡이 파일 맨 앞에 붙어 있는가(앞 무음은 도구가 자름), 잔향이 길지 않은가(잔향은 코드가 얹음), 세 크기가 확실히 낮아지는가. 연쇄가 이어질수록 살짝 높아지는 것은 코드가 재생 속도로 건다.
 
-**쓰는 것(시험판 9)**: 「HQ fire work sound, 고음질 폭죽소리.mp3」(42초, 7초 뒤 펑 여덟 번) → `sfx/hq/`. 펑의 머리만 0.25~0.4초로 짧게 잘라 타닥거리는 꼬리를 버리고(꼬리는 마지막 등불에만), 150Hz 아래 울림을 걸러낸 뒤 큰 등불에는 64Hz 쿵을 더했다. 결과: 작은 750Hz·보통 611Hz·큰 411Hz, -20dB까지 170~330ms. `game.js` `SFX_DIR = 'sfx/hq'`. 자른 시각은 `tools/sfx_cut.py`의 `hq` 묶음. 처음엔 작고 늦게 들린다고 했다 → 세기를 .72로 올리고, 읽어 들일 때 최고치의 8% 지점(실제 펑 시작)을 찾아 거기서부터 재생해 mp3 앞의 빈 구간을 없앴다(`buf._off`). AudioContext는 `latencyHint: 'interactive'`. 검사: 탭 뒤 첫 소리 22ms. 그래도 「기계음」이라 했다 → 연쇄마다 재생 속도를 올려(최대 1.8배) 폭죽이 뿅뿅거렸던 것을 없앴다(속도는 ±3%만, 고조는 세기로). 남아 있던 사인파 삑 소리들(단추 톡, 겉종이, 거울, 풀벌레, 소쩍새)도 잡음·떨림 섞인 소리로 바꿨다.
+**꺼 둠(시험판 10, 합성 사물놀이로 바꿈 — design.md 사운드)**: 「HQ fire work sound, 고음질 폭죽소리.mp3」(42초, 7초 뒤 펑 여덟 번) → `sfx/hq/`. 펑의 머리만 0.25~0.4초로 짧게 잘라 타닥거리는 꼬리를 버리고(꼬리는 마지막 등불에만), 150Hz 아래 울림을 걸러낸 뒤 큰 등불에는 64Hz 쿵을 더했다. 결과: 작은 750Hz·보통 611Hz·큰 411Hz, -20dB까지 170~330ms. `game.js` `SFX_DIR = 'sfx/hq'`. 자른 시각은 `tools/sfx_cut.py`의 `hq` 묶음. 처음엔 작고 늦게 들린다고 했다 → 세기를 .72로 올리고, 읽어 들일 때 최고치의 8% 지점(실제 펑 시작)을 찾아 거기서부터 재생해 mp3 앞의 빈 구간을 없앴다(`buf._off`). AudioContext는 `latencyHint: 'interactive'`. 검사: 탭 뒤 첫 소리 22ms. 그래도 「기계음」이라 했다 → 연쇄마다 재생 속도를 올려(최대 1.8배) 폭죽이 뿅뿅거렸던 것을 없앴다(속도는 ±3%만, 고조는 세기로). 남아 있던 사인파 삑 소리들(단추 톡, 겉종이, 거울, 풀벌레, 소쩍새)도 잡음·떨림 섞인 소리로 바꿨다.
 
 **꺼 둔 것**: 불꽃놀이 조각은 웅웅하고 지저분해서 등불 터지는 느낌이 안 났다. `sfx/fireworks/`에 남겨 두고 `game.js`의 `SFX_DIR`을 비워 합성음으로 돌렸다. 다음 파일은 **가깝고 마른 소리**여야 한다: 풍선 터짐(balloon pop), 종이봉투 터짐(paper bag pop), 뽁뽁이(bubble wrap pop) 계열. 잔향·거리감이 있는 야외 녹음은 피한다. 아래는 그때의 기록. 「불꽃놀이 소리 ASMR.mp3」(21.5초) 한 파일로 전부 만들었다. 14.40·16.19·18.48·19.80초의 또렷한 펑 네 번을 등불 크기별로 나누고(낮은 896Hz 펑 → 큰 등불), 음높이를 살짝 옮겨 차이를 벌리고 큰 등불에는 62Hz 쿵을 더했다. 마지막 등불은 18.48초부터 2.9초(펑 두 번과 잔불), 심지는 앞부분 타닥거림 한 조각. 자르는 시각과 조건은 `tools/sfx_cut.py`에 그대로 있다(다른 녹음을 받으면 시각만 바꿔 다시 돌린다). 겉종이(peel)는 파일 없이 합성음 그대로. 게임 안 세기는 팡 .42, 마지막 .75(`game.js` `pop`/`resolve`).
+
+## 국악기 효과음 (시험판 11, 지금 쓰는 것)
+
+합성 사물놀이가 「가짜 같다·싸구려」라서 진짜 녹음으로 바꿨다. 사용자가 받은 네 파일(공유마당 등에서):
+
+| 받은 파일 | 악기 | 잘라 낸 것 (`sfx/gugak/`) |
+| --- | --- | --- |
+| 국악기_꽹과리1.mp3 (18초, 점점 세게 치는 연습) | 꽹과리 | kk1·kk2 열린 「갱」(12.12s·9.52s) · kks1·kks2 막은 「갠」(12.66s·7.66s) |
+| 전통악기_장구_치다_보통속도_Ver.1_MKH418_ST_192.mp3 (31초) | 장구 | deong1·2 덩(1.94s·3.33s) · deok1·2 덕/채편(7.11s·8.44s) · kung1·2 쿵/궁편(23.20s·24.49s) |
+| 전통악기_북_치다_빠른속도_MKH418_ST_192.mp3 (26초) | 북 | buk1 (0.59s, 맨 처음 큰 한 번) |
+| 국악 효과음 #705.mp3 (5초) | 징 | jing (4.6초 전체) |
+
+- 자르는 도구: `tools/sfx_gugak.py <받은 폴더>`. 시작점은 각 타격 앞뒤 30ms 안에서 최고치 15%를 넘는 첫 지점.
+- 게임: 녹음이 읽히면 `kkw`·`jg`·`bk`·`jn`이 녹음을 틀고, 없으면 합성 악기. 같은 악기 두 벌을 무작위로 번갈아 반복감을 줄이고 좌우로 살짝 흩뜨린다. 세기는 악기마다 맞춤(꽹과리 ×3.2, 덩 ×1.8, 덕 ×2.3, 북 ×1.15, 징 ×2.2).
+- **출처 표시 확인 필요**: 받은 곳의 이용 조건(특히 「출처 표시」)을 사용자에게 확인하고 README에 적는다.
 
 ## 처리 과정 (Claude)
 
