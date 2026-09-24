@@ -168,7 +168,7 @@ function jg(t, kind, vol) {
 function bk(t, vol) { const b = gk('buk1'); if (b) play(b, t, vol * 1.15, R(), .16); else buk(t, vol); }
 function jn(t, vol) { const b = gk('jing'); if (b) play(b, t, vol * 2.2, 1, .3); else jing(t, vol); }
 let deokTurn = 0;
-const FX_MODE = 'samul';   // 'pluck' 한지 톡 + 가야금 한 음 (배경음이 사물놀이일 때) · 'samul' 연쇄마다 사물 악기
+const FX_MODE = 'tone';    // 'tone' 마림바·칼림바 음정 팡(16) · 'samul' 국악기 · 'pluck' 한지 톡 + 가야금   // 'pluck' 한지 톡 + 가야금 한 음 (배경음이 사물놀이일 때) · 'samul' 연쇄마다 사물 악기
 function tapPaper(t, size) {                      // 한지를 손끝으로 톡: 짧고 부드러운 파열 + 종이결
   hit(t, .035 + size * .008, 1800 - size * 250, .22, 'bandpass', 1.1);
   hit(t, .05, 420 - size * 60, .12, 'lowpass');
@@ -184,10 +184,41 @@ function fxPluck(f, t, vol, pan) {               // 효과음용 가야금 한 �
   n.connect(SAM); const v = AC.createGain(); v.gain.value = .35; n.connect(v).connect(VERB);
   o.start(t); o2.start(t); o.stop(t + 1.4); o2.stop(t + 1.4);
 }
+// ---------- 음정 있는 「팡」 (시험판 16): 마림바(나무) + 칼림바(금속). tools/sfx_tone.py 미리듣기 A·B와 같은 소리 ----------
+function partial(f, t, a, vol, d, pan, out) { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; env(g, t, a, vol, d); o.connect(g).connect(out); o.start(t); o.stop(t + a + d + .05); }
+function toneOut(pan, verb) { const g = AC.createGain(); let n = g; if (AC.createStereoPanner) { const p = AC.createStereoPanner(); p.pan.value = pan; n = g.connect(p); } n.connect(SAM); const v = AC.createGain(); v.gain.value = verb; n.connect(v).connect(VERB); return g; }
+function marimba(f, t, vol = .5, pan = 0, dur = .55) {
+  const out = toneOut(pan, .3);
+  partial(f, t, .002, vol, dur, pan, out); partial(f * 4, t, .001, vol * .35, dur * .35, pan, out); partial(f * 10.1, t, .001, vol * .15, dur * .15, pan, out);
+  partial(f * 2, t, .001, vol * .3, .03, pan, out);                        // 나무 때리는 톡
+}
+function kalimba(f, t, vol = .45, pan = 0, dur = .9) {
+  const out = toneOut(pan, .3);
+  const o = AC.createOscillator(), m = AC.createOscillator(), mg = AC.createGain(), g = AC.createGain();
+  o.frequency.value = f; m.frequency.value = f * 2.01; mg.gain.setValueAtTime(f * .6, t); mg.gain.exponentialRampToValueAtTime(f * .01, t + .45);
+  m.connect(mg).connect(o.frequency); env(g, t, .001, vol, dur); o.connect(g).connect(out); o.start(t); m.start(t); o.stop(t + dur + .05); m.stop(t + dur + .05);
+  partial(f * 5.4, t, .001, vol * .25, .12, pan, out);                     // 금속 손톱 소리
+}
+function paperTok(t, size, vol = 1) {             // 한지 「툭」: 2.6kHz 대역 잡음, 아주 짧게
+  hit(t, .05 + size * .01, 2600, (.16 + size * .04) * vol, 'bandpass', 1.4);
+}
+// 파도·크기 → 음: 파도마다 5음계로 한 칸 오르고, 작은 등불은 한 옥타브 위(칼림바), 큰 등불은 한 옥타브 아래(마림바)
+function toneFor(size, wave) {
+  const root = 261.6 * KEYS[SCENE], deg = PENT[Math.min(wave, 7)];
+  return root * deg * (size === 1 ? 2 : size === 3 ? .5 : 1);
+}
 function pop(size, wave, dt = 0) {
   if (!AC) return; const t = AC.currentTime + dt;
   const buf = pick('pop' + size);
   if (buf) { const rate = 0.97 + Math.random() * .06, vol = .68 + Math.min(wave, 6) * .03; playBuf(buf, t, vol, rate, OUT, .1); return; }
+  if (FX_MODE === 'tone') {
+    const pan = Math.random() * .6 - .3, loud = .9 + Math.min(wave, 6) * .03, f = toneFor(size, wave);
+    paperTok(t, size, .9);
+    if (size === 1) kalimba(f, t, .34 * loud, pan);
+    else if (size === 2) marimba(f, t, .42 * loud, pan);
+    else { marimba(f, t, .5 * loud, pan, .7); marimba(f * 2, t + .012, .16 * loud, -pan, .3); }
+    return;
+  }
   if (FX_MODE === 'samul') {                        // (예전) 연쇄마다 사물 악기
     const up = 1 + Math.min(wave, 8) * .018, loud = .85 + Math.min(wave, 6) * .03; paper(t, size);
     if (size === 1) kkw(t, .42 * loud, wave % 3 !== 2, up); else if (size === 2) jg(t, (deokTurn++ % 2) ? 'deok' : 'deong', .78 * loud); else { bk(t, .85 * loud); jg(t + .004, 'kung', .35); }
@@ -202,6 +233,11 @@ function pop(size, wave, dt = 0) {
 function resolve() {                               // 마지막 등불: 북 + 꽹과리 + 징
   if (!AC) return; const t = AC.currentTime;
   if (SFX.final) { playBuf(SFX.final, t, 1, 1, OUT, .4); return; }
+  if (FX_MODE === 'tone') {                       // 마지막 등불: 한지 툭 + 도·미·솔·도 화음(마림바 아래, 칼림바 위)
+    const root = 261.6 * KEYS[SCENE]; paperTok(t, 3, 1.2);
+    [[1, -.4], [5 / 4, -.1], [3 / 2, .2]].forEach(([m, p]) => marimba(root * m, t + .01, .3, p, .8));
+    kalimba(root * 2, t + .02, .3, .5, 1.2); return;
+  }
   if (FX_MODE === 'samul') { paper(t, 3); bk(t, .62); kkw(t, .3, true, 1.04); jn(t + .02, .4); return; }
   // 마지막 등불: 징 하나 + 가야금 세 음이 맺음(도·솔·높은 도)
   tapPaper(t, 3); jn(t + .01, .38);
@@ -220,12 +256,19 @@ const JANGDAN = [
 let lastJD = -1;
 function samulClear() {
   if (!AC) return;
+  if (FX_MODE === 'tone') {                       // 판 깨기: 마림바 아르페지오가 반박자 격자를 타고 올라가 칼림바 높은 음으로 맺음
+    duck(); clearTimeout(duckT); duckT = setTimeout(() => { if (AC) MUS.gain.setTargetAtTime(MUS_VOL, AC.currentTime, .8); }, 2600);
+    const bt = beatSeg(), step = Math.min(.2, Math.max(.11, bt ? 15 / bt.bpm : .15));
+    const t0 = AC.currentTime + nextTickMs(60) / 1000, root = 261.6 * KEYS[SCENE];
+    [0, 1, 2, 3, 4, 5, 6, 7].forEach((d, i) => marimba(root * PENT[d], t0 + i * step, .34, i / 7 - .5, .5));
+    kalimba(root * 4, t0 + 8 * step, .36, 0, 1.6); marimba(root, t0 + 8 * step, .3, 0, 1.2); return;
+  }
   if (FX_MODE !== 'samul') {                        // 배경음이 사물놀이면 판 깨기는 가야금 가락 한 줄 + 징으로 가볍게
     const t0 = AC.currentTime + .05, root = 196 * KEYS[SCENE];
     [0, 1, 2, 3, 4, 5, 7].forEach((d, i) => fxPluck(root * 2 * PENT[d], t0 + i * .1, .13, (i % 3 - 1) * .3));
     jn(t0 + .75, .3); return;
   }
-  duck(); clearTimeout(duckT); duckT = setTimeout(() => { if (AC) MUS.gain.setTargetAtTime(.5, AC.currentTime, .8); }, 3400);
+  duck(); clearTimeout(duckT); duckT = setTimeout(() => { if (AC) MUS.gain.setTargetAtTime(MUS_VOL, AC.currentTime, .8); }, 3400);
   let j; do { j = Math.floor(Math.random() * JANGDAN.length); } while (j === lastJD); lastJD = j;
   const JD = JANGDAN[j], bt = beatSeg();
   const half = bt ? 30 / bt.bpm : .16, b = Math.min(.24, Math.max(.11, half * JD.b));
@@ -284,6 +327,7 @@ function nextTickMs(minMs) {
   const k = Math.ceil((target - b.offset) / grid - 1e-4), tick = b.offset + k * grid;
   return Math.max(minMs, Math.round((tick - t) * 1000));
 }
+const MUS_VOL = .72, DUCK_VOL = .3;                 // 배경음 버스 세기(16.1: 「bgm이 조금 더 컸으면」 .5→.72) · 연쇄 동안 낮추는 값(.14→.3, 음정 팡은 배경음과 겹쳐도 덜 부딪힘)
 const TRACKS = {}, TRACK_VOL = .8; let curTrack = null, synthOn = true;   // 곡은 -19dB쯤으로 고르게 뽑혀 있어 .8 × MUS(.5)면 팡 아래에 깔린다
 function loadTrack(ch) {
   if (TRACKS[ch] !== undefined) return TRACKS[ch];
@@ -307,7 +351,7 @@ function setScene(ch) {
   if (AC && bed && ch === SCENE) return;   // 같은 장이면 그대로
   SCENE = ch; if (!AC) return;
   const t = AC.currentTime;
-  MUS.gain.setTargetAtTime(.5, t, 1.2); AMB.gain.setTargetAtTime(.9, t, 1.5);
+  MUS.gain.setTargetAtTime(MUS_VOL, t, 1.2); AMB.gain.setTargetAtTime(.9, t, 1.5);
   if (bed) { const old = bed; old.g.gain.setTargetAtTime(.0001, t, .8); setTimeout(() => old.src.forEach(s => s.stop()), 4000); }
   bed = makeBed(SCN[ch]);
   if (!nextBeat) nextBeat = t + .3;
@@ -726,8 +770,8 @@ const twinOf = p => { const L = G.lan.get(p); if (!L || L.t !== 4) return null; 
 let duckT = null;
 function duck() {
   if (!AC || !MUS) return; const t = AC.currentTime;
-  MUS.gain.cancelScheduledValues(t); MUS.gain.setTargetAtTime(.14, t, .05);
-  clearTimeout(duckT); duckT = setTimeout(() => { if (AC) MUS.gain.setTargetAtTime(.5, AC.currentTime, .6); }, 1400);
+  MUS.gain.cancelScheduledValues(t); MUS.gain.setTargetAtTime(DUCK_VOL, t, .05);
+  clearTimeout(duckT); duckT = setTimeout(() => { if (AC) MUS.gain.setTargetAtTime(MUS_VOL, AC.currentTime, .6); }, 1400);
 }
 async function chain(start) {
   duck();
