@@ -643,6 +643,25 @@ function paperBurst(i, s, big = false) {
     const dur = (1100 + Math.random() * 600) * (big ? 1.6 : 1); e.style.setProperty('--d', dur+'ms');
     board.appendChild(e); setTimeout(() => e.remove(), dur + 50);
   }
+  sparks(x, yc, cs, s, big);
+}
+// 불티: 위쪽 반원으로 튀어 올라(꼬리는 진행 방향 반대) 포물선으로 떨어진다
+function sparks(x, y, cs, s, big = false) {
+  const cnt = (2 + s) + (big ? 3 : 0);
+  for (let k = 0; k < cnt; k++) {
+    const e = document.createElement('div'); e.className = 'spark';
+    const a = -Math.PI / 2 + (Math.random() - .5) * Math.PI * 1.1;              // 위쪽 ±100도
+    const d = cs * (0.5 + Math.random() * 0.6 * s) * (big ? 1.7 : 1);
+    const x0 = Math.cos(a) * d, y0 = Math.sin(a) * d;
+    e.style.left = x + 'px'; e.style.top = y + 'px';
+    e.style.setProperty('--w', (cs * (0.24 + Math.random() * 0.12) * (big ? 1.4 : 1)) + 'px');
+    e.style.setProperty('--x0', x0 + 'px'); e.style.setProperty('--y0', y0 + 'px');
+    e.style.setProperty('--a0', (a * 180 / Math.PI + 90) + 'deg');              // 그림의 머리가 위, 꼬리가 아래 → 진행 방향으로 돌림
+    e.style.setProperty('--a1', (a * 180 / Math.PI + 90 + (Math.random() * 60 - 30)) + 'deg');
+    e.style.setProperty('--sw', (Math.random() * 30 - 15) + 'px'); e.style.setProperty('--fall', (cs * (0.9 + Math.random() * 0.9)) + 'px');
+    const dur = (700 + Math.random() * 500) * (big ? 1.5 : 1); e.style.setProperty('--d', dur + 'ms');
+    board.appendChild(e); setTimeout(() => e.remove(), dur + 50);
+  }
 }
 function goldDust(cnt) {
   const b = board.getBoundingClientRect();
@@ -759,15 +778,16 @@ async function chain(start) {
   return woke;
 }
 function rain() {
-  const cols = ['var(--l-light)', 'var(--l-mid)', 'var(--l-dark)', 'var(--l-scrap)', '#F6D27A'];
-  for (let k = 0; k < 70; k++) {
+  // 판을 깨면 제미나이 색종이(오방색 한지 조각 12가지, assets.md 10번)가 내려온다. 무늬는 그림, 크기·회전·흔들림은 여기서
+  for (let k = 0; k < 64; k++) {
     const e = document.createElement('div'); e.className = 'rain';
-    const w = 5 + Math.random()*8, h = 7 + Math.random()*10;
-    e.style.width = w+'px'; e.style.height = h+'px'; e.style.background = cols[k % cols.length];
-    e.style.left = Math.random()*100+'vw'; e.style.top = (-8 - Math.random()*20)+'vh';
-    e.style.setProperty('--dx', (Math.random()*120-60)+'px'); e.style.setProperty('--rr', (Math.random()*720-360)+'deg');
-    e.style.animationDuration = (3 + Math.random()*2.5)+'s'; e.style.animationDelay = (Math.random()*1.4)+'s';
-    document.body.appendChild(e); setTimeout(() => e.remove(), 7200);
+    const w = 14 + Math.random() * 16; e.style.width = w + 'px'; e.style.height = w + 'px';
+    e.style.backgroundImage = `var(--img-cf${k % 12})`;
+    e.style.left = Math.random() * 100 + 'vw'; e.style.top = (-8 - Math.random() * 20) + 'vh';
+    e.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px'); e.style.setProperty('--rr', (Math.random() * 720 - 360) + 'deg');
+    e.style.setProperty('--sw', (10 + Math.random() * 18) * (Math.random() < .5 ? -1 : 1) + 'px');
+    e.style.animationDuration = (3.2 + Math.random() * 2.6) + 's'; e.style.animationDelay = (Math.random() * 1.6) + 's';
+    document.body.appendChild(e); setTimeout(() => e.remove(), 7800);
   }
 }
 async function flyToStar(i) {

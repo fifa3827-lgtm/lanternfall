@@ -53,7 +53,7 @@
   .sky .st.on { fill: #FFF2C6; filter: url(#glow); }
   .sky .st.pop { animation: starpop .7s ease-out; }
   @keyframes starpop { 0% { r: 3.2; } 100% { r: 1.1; } }
-  .sky .name { position: absolute; right: 2%; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; letter-spacing: .18em; font-family: var(--serif); font-size: 14px; color: var(--gold); opacity: 0; transition: opacity 1s; text-shadow: 0 0 8px rgba(246,210,122,.35); }
+  .sky .name { position: absolute; right: 2%; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; white-space: nowrap; line-height: 1; letter-spacing: .1em; font-family: var(--serif); font-size: 13px; color: var(--gold); opacity: 0; transition: opacity 1s; text-shadow: 0 0 8px rgba(246,210,122,.35); }
   .sky.complete .name { opacity: .9; }
   .sky.complete .st.on { animation: twinkle 3s ease-in-out infinite; }
   @keyframes twinkle { 50% { opacity: .55; } }
@@ -96,14 +96,15 @@
            -webkit-box-reflect: below var(--shore) linear-gradient(to bottom, rgba(0,0,0,.5), rgba(0,0,0,.2) 55%, transparent 92%); }
   .board.shake { animation: shake .34s ease; }
   @keyframes shake { 0%,100% { transform: none; } 20% { transform: translate(-4px,3px); } 40% { transform: translate(4px,-3px); } 60% { transform: translate(-3px,-1px); } 80% { transform: translate(2px,2px); } }
-  .water { position: absolute; top: 100%; left: -8%; right: -8%; height: min(60vh, calc(var(--size, 440px) * 1.05)); margin-top: -1px; pointer-events: none; z-index: 1;
+  /* 강물: 제미나이 물결 그림(assets.md 12번)이 아주 천천히 왼쪽으로 흐른다. 위는 짙게, 아래로 사라진다 */
+  .water { position: absolute; top: 100%; left: 50%; width: 100vw; transform: translateX(-50%); height: min(60vh, calc(var(--size, 440px) * 1.05)); margin-top: -1px; pointer-events: none; z-index: 1;
            background:
              linear-gradient(90deg, transparent, rgba(255,255,255,.07) 20%, rgba(255,255,255,.07) 80%, transparent) top / 100% 1px no-repeat,
-             repeating-linear-gradient(to bottom, rgba(190,200,255,.045) 0 1px, transparent 1px 7px),
-             linear-gradient(to bottom, rgba(15,16,22,.12), rgba(23,23,34,.55) 55%, var(--sky-bot) 100%);
-           -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); mask-image: linear-gradient(to bottom, #000 70%, transparent);
-           animation: ripple 5s linear infinite; }
-  @keyframes ripple { to { background-position: top, 0 28px, 0 0; } }
+             linear-gradient(to bottom, rgba(15,16,22,.55), rgba(23,23,34,.15) 30%, var(--sky-bot) 100%),
+             var(--img-river) 0 0 / 1400px auto repeat-x;
+           -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent); mask-image: linear-gradient(to bottom, #000 60%, transparent);
+           animation: ripple 90s linear infinite; }
+  @keyframes ripple { to { background-position: top, 0 0, -1400px 0; } }
   .cell { position: absolute; width: calc(100% / var(--n)); height: calc(100% / var(--n)); display: flex; align-items: center; justify-content: center; }
   .rise { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
   .board.pre .rise { opacity: 0; }
@@ -191,8 +192,10 @@
   .lan.finale { animation: burstF .5s ease-out forwards !important; }
   @keyframes burst { 0% { transform: scale(1); } 60% { transform: scale(1.28); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
   @keyframes burstF { 0% { transform: scale(1); } 40% { transform: scale(1.6); opacity: 1; filter: brightness(2); } 100% { transform: scale(1.9); opacity: 0; } }
-  .glow { position: absolute; border-radius: 50%; pointer-events: none; z-index: 1; mix-blend-mode: screen;
-          background: radial-gradient(circle, rgba(255,240,210,.85), rgba(var(--l-glow),.35) 40%, transparent 70%); animation: glow 1.2s ease-out forwards; }
+  /* 터짐의 빛: 제미나이 불티(둥근 것, 11번)를 가림막으로 써서 장 색으로 칠한다 — 불규칙한 번짐과 자잘한 불티 점이 살아 있다 */
+  .glow { position: absolute; pointer-events: none; z-index: 1; mix-blend-mode: screen;
+          background: radial-gradient(circle, #FFF6E0 0%, rgba(var(--l-glow),.95) 22%, rgba(var(--l-glow),.5) 50%, rgba(var(--l-glow),.2) 100%);
+          -webkit-mask: var(--img-glow) center / 100% 100% no-repeat; mask: var(--img-glow) center / 100% 100% no-repeat; animation: glow 1.2s ease-out forwards; }
   .glow.big { animation-duration: 2s; }
   @keyframes glow { 0% { transform: translate(-50%,-50%) scale(.5); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1.6); opacity: 0; } }
   .scrap { position: absolute; pointer-events: none; z-index: 6; border-radius: 1px; animation: scrap var(--d) cubic-bezier(.2,.6,.4,1) forwards; }
@@ -201,6 +204,14 @@
     22%  { transform: translate(var(--x0), var(--y0)) rotate(var(--r0)) rotateX(40deg); opacity: 1; }
     55%  { transform: translate(calc(var(--x0) + var(--sw)), calc(var(--y0) + var(--fall) * .45)) rotate(var(--r1)) rotateX(160deg); }
     100% { transform: translate(calc(var(--x0) - var(--sw)), calc(var(--y0) + var(--fall))) rotate(var(--r2)) rotateX(320deg); opacity: 0; } }
+  /* 불티(제미나이 11번): 터질 때 3~5개가 튀어 오르다 떨어진다. 꼬리가 나는 방향 반대로 향하게 돌린다 */
+  .spark { position: absolute; width: var(--w); height: calc(var(--w) * 1.54); pointer-events: none; z-index: 7; background: var(--img-spark) center / 100% 100% no-repeat;
+           mix-blend-mode: screen; transform-origin: 50% 32%; animation: spark var(--d) cubic-bezier(.15,.7,.5,1) forwards; }
+  @keyframes spark {
+    0%   { transform: translate(-50%,-32%) rotate(var(--a0)) scale(.4); opacity: 0; }
+    12%  { transform: translate(calc(-50% + var(--x0) * .35), calc(-32% + var(--y0) * .35)) rotate(var(--a0)) scale(1); opacity: 1; }
+    45%  { transform: translate(calc(-50% + var(--x0)), calc(-32% + var(--y0))) rotate(var(--a1)) scale(.9); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--x0) + var(--sw)), calc(-32% + var(--y0) + var(--fall))) rotate(180deg) scale(.5); opacity: 0; } }
   .leaf { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; background: linear-gradient(135deg, #FFF1BE, var(--gold) 50%, #C8902E);
           box-shadow: 0 0 10px 2px rgba(246,210,122,.6); pointer-events: none; z-index: 5; transition: transform linear, opacity .15s; }
   .flyer { position: fixed; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #FFF2C6; box-shadow: 0 0 14px 5px rgba(246,210,122,.8); z-index: 30; pointer-events: none;
@@ -217,8 +228,13 @@
   .gold { position: fixed; width: 3px; height: 3px; border-radius: 50%; background: #FFE9A8; box-shadow: 0 0 6px 2px rgba(246,210,122,.7); pointer-events: none; z-index: 4;
           animation: gold var(--d) ease-out forwards; }
   @keyframes gold { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--gx), var(--gy)); opacity: 0; } }
-  .rain { position: fixed; pointer-events: none; z-index: 3; border-radius: 1px; animation: rain linear forwards; }
-  @keyframes rain { 0% { transform: translate(0,0) rotate(0) rotateX(0); } 100% { transform: translate(var(--dx), 115vh) rotate(var(--rr)) rotateX(900deg); } }
+  .rain { position: fixed; pointer-events: none; z-index: 41; background: center / contain no-repeat; animation: rain linear forwards; filter: drop-shadow(0 0 2px rgba(0,0,0,.35)); }
+  @keyframes rain {
+    0%   { transform: translate(0,0) rotate(0) rotateX(0) rotateY(0); opacity: 0; }
+    6%   { opacity: 1; }
+    33%  { transform: translate(var(--sw), 38vh) rotate(calc(var(--rr) * .33)) rotateX(300deg) rotateY(120deg); }
+    66%  { transform: translate(calc(var(--sw) * -1), 76vh) rotate(calc(var(--rr) * .66)) rotateX(600deg) rotateY(240deg); }
+    100% { transform: translate(var(--dx), 115vh) rotate(var(--rr)) rotateX(900deg) rotateY(360deg); opacity: 1; } }
 
   /* ---------- overlays ---------- */
   .over, .cards { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 40; padding: 24px; text-align: center;
@@ -321,7 +337,7 @@
   .sg:disabled { opacity: .35; cursor: default; }
   .word { background: none; border: 0; color: inherit; padding: 0; }
   @media (prefers-reduced-motion: reduce) { .fl { animation-duration: 90s; } .tcenter h1, .tbtns, .tcenter .tsub { animation: none; } }
-  @media (prefers-reduced-motion: reduce) { .lan, .water { animation: none; } .board.shake { animation: none; } .scrap, .rain, .board.enter .rise { animation-duration: .01s !important; } }
+  @media (prefers-reduced-motion: reduce) { .lan, .water { animation: none; } .board.shake { animation: none; } .scrap, .spark, .rain, .board.enter .rise { animation-duration: .01s !important; } }
 </style>
 </head>
 <body>
