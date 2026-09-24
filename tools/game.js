@@ -1,0 +1,519 @@
+(() => {
+const LEVELS = __LEVELS__;
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+const dirsFor = t => DIRS.filter(([dr,dc]) => (t !== 1 || dr === 0) && (t !== 2 || dc === 0));
+(() => { const s = $('dust'); for (let i = 0; i < 16; i++) { const d = document.createElement('i'); d.style.left = Math.random()*100+'%'; d.style.top = Math.random()*55+'%'; s.appendChild(d); } })();
+
+// ---------- chapters & constellations ----------
+const CH = [
+  { name: '첫 밤', sky: '초롱자리',
+    stars: [[50,4],[38,10],[33,20],[38,30],[50,34],[62,30],[67,20],[62,10],[50,39],[50,19]],
+    edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[4,8]] },
+  { name: '바람 부는 밤', sky: '연자리',
+    stars: [[50,3],[39,13],[50,24],[61,13],[53,28],[47,31],[54,34],[48,37],[55,40],[75,5]],
+    edges: [[0,1],[1,2],[2,3],[3,0],[0,2],[1,3],[2,4],[4,5],[5,6],[6,7],[7,8]] },
+  { name: '깊은 밤', sky: '풍경자리',
+    stars: [[50,3],[43,10],[57,10],[39,20],[61,20],[36,29],[64,29],[50,25],[47,36],[53,41]],
+    edges: [[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6],[0,7],[7,8],[8,9]] },
+  { name: '축제의 밤', sky: '부채자리',
+    stars: [[50,37],[30,22],[34,12],[42,6],[50,4],[58,6],[66,12],[70,22],[50,20],[50,41]],
+    edges: [[0,1],[0,7],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[0,8],[8,4],[0,9]] },
+  { name: '새벽', sky: '학자리',
+    stars: [[20,12],[28,17],[38,21],[50,22],[46,10],[58,4],[72,6],[62,27],[76,31],[86,34]],
+    edges: [[0,1],[1,2],[2,3],[2,4],[4,5],[5,6],[3,7],[7,8],[8,9]] },
+];
+const chOf = idx => Math.floor(idx / 10);
+
+// ---------- sound ----------
+let AC = null, OUT = null;
+function audio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); OUT = AC.createDynamicsCompressor(); OUT.connect(AC.destination); } catch (e) {} }
+  if (AC && AC.state === 'suspended') AC.resume();
+}
+const PENT = [1, 9/8, 5/4, 3/2, 5/3, 2, 9/4, 5/2, 3, 10/3, 4];
+function tone(type, f0, f1, t, dur, vol) {
+  const o = AC.createOscillator(), g = AC.createGain(); o.type = type;
+  o.frequency.setValueAtTime(f0, t); if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur * .3);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(OUT); o.start(t); o.stop(t + dur + .05);
+}
+function noise(t, dur, freq, vol, type = 'bandpass') {
+  const len = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const n = AC.createBufferSource(), g = AC.createGain(), f = AC.createBiquadFilter();
+  n.buffer = buf; f.type = type; f.frequency.value = freq; f.Q.value = .7; g.gain.value = vol; n.connect(f).connect(g).connect(OUT); n.start(t);
+}
+function pop(size, wave, dt = 0) {
+  if (!AC) return; const t = AC.currentTime + dt, base = (330 - size * 55) * PENT[Math.min(wave, PENT.length - 1)];
+  tone('triangle', base * 1.6, base, t, .35, .3); tone('sine', base * 3, 0, t, .5, .07);
+  noise(t, .09, 2400 + size * 400, .5 + size * .15);
+  if (size >= 3) tone('sine', 120, 45, t, .22, .35);
+}
+function resolve() {
+  if (!AC) return; const t = AC.currentTime;
+  [261.6, 329.6, 392, 523.3].forEach((f, i) => { tone('triangle', f, 0, t + i * .012, 1.6, .16); tone('sine', f * 2, 0, t + i * .012, 1.2, .05); });
+  tone('sine', 90, 40, t, .4, .4); noise(t, .25, 1800, .7);
+}
+const soft = () => { if (AC) tone('sine', 700, 420, AC.currentTime, .16, .14); };
+const fizz = () => { if (AC) noise(AC.currentTime, .28, 5000, .25, 'highpass'); };
+const ting = () => { if (!AC) return; const t = AC.currentTime; tone('sine', 1568, 0, t, 1.4, .12); tone('sine', 2093, 0, t + .06, 1.2, .08); };
+const sad = () => { if (AC) tone('triangle', 311, 233, AC.currentTime, .6, .16); };
+const yawn = () => { if (!AC) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(1400, t + .15); o.frequency.exponentialRampToValueAtTime(560, t + .65); g.gain.setValueAtTime(.22, t); g.gain.linearRampToValueAtTime(.0001, t + .7); o.connect(g).connect(OUT); o.start(t); o.stop(t + .75); };
+const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+// ---------- save ----------
+let save = { unlocked: 0, done: {}, seen: {} };
+try { const s = localStorage.getItem('lanternfall.save'); if (s) save = Object.assign(save, JSON.parse(s)); } catch (e) {}
+save.done = save.done || {}; save.seen = save.seen || {};
+for (let i = 0; i < save.unlocked; i++) save.done[i] = true;
+const persist = () => { try { localStorage.setItem('lanternfall.save', JSON.stringify(save)); } catch (e) {} };
+
+// ---------- mini illustrations & cards ----------
+function lanHTML(s, opts = {}) {
+  return `<div class="lan s${s}${opts.sleep ? ' sleep' : ''}"><span class="string"></span>${opts.fuse ? '<span class="wick"></span>' : ''}<span class="paper"></span><span class="cap t"></span><span class="cap b"></span>` +
+    (opts.band ? `<span class="band ${opts.band}"></span>` : '') + (opts.veil ? '<span class="veil"></span>' : '') +
+    (opts.sleep ? '<span class="eyes"><i></i><i></i></span><span class="zz">z z</span>' : `<span class="knots">${'<i></i>'.repeat(s)}</span>`) + '</div>';
+}
+function mini(spec) {
+  return '<div class="mini">' + spec.map(x => {
+    if (x === '-') return '<div class="mc mray"></div>';
+    if (x === '>') return '<div class="mc mray mstop"></div>';
+    if (x === '.') return '<div class="mc"></div>';
+    if (x === 'R') return '<div class="mc"><div class="rock"></div></div>';
+    if (x === 'X') return '<div class="mc"><span class="x">✕</span></div>';
+    if (x === 'S') return '<div class="mc">' + lanHTML(2, { sleep: true }) + '</div>';
+    if (/^T\d$/.test(x)) return '<div class="mc tapicons">' + '<i></i>'.repeat(+x[1]) + '</div>';
+    const s = +x[1] || 2, o = { band: x[0] === 'H' ? 'h' : x[0] === 'V' ? 'v' : null, fuse: x[0] === 'F', veil: x[0] === 'D' };
+    return '<div class="mc">' + lanHTML(s, o) + '</div>';
+  }).join('') + '</div>';
+}
+const CARDS = {
+  intro: { title: 'Lanternfall', kicker: '규칙은 셋',
+    steps: [[['L2'], '등불을 톡 치면 터져요. 아래 매듭 수만큼 네 방향으로 불꽃이 날아가요.'],
+            [['L2','-','L1'], '불꽃은 처음 만난 등불에서 멈추고, 그 등불도 터뜨려요. 이렇게 연쇄가 이어져요.'],
+            [['T1'], '정해진 횟수 안에 모든 등불을 터뜨리면 성공. 오른쪽 위 불씨가 남은 횟수예요.']] },
+  sleep:   { title: '잠든 등불', kicker: '새로운 등불', art: ['L2','>','.','S'], text: '불꽃이 닿으면 깨어나요. 깨우면 실패예요. 직접 누를 수도 없어요. 불꽃이 비켜가도록 길을 골라야 해요.' },
+  preview: { title: '미리보기', kicker: '알아두면 좋은 것', art: ['-','L2','-'], text: '등불을 꾹 누르고 있으면 불꽃이 갈 길이 금색 선으로 보여요. 손을 떼도 터지지 않아요. 짧게 톡 쳐야 터져요.' },
+  rock:    { title: '바위', kicker: '새로운 것', art: ['L3','-','R','L1'], text: '바위는 불꽃을 막아요. 바위 뒤의 등불은 다른 방향에서 맞혀야 해요.' },
+  taps2:   { title: '두 번', kicker: '새로운 규칙', art: ['T2'], text: '이번 판은 두 번 칠 수 있어요. 첫 연쇄가 닿지 못한 무리를 두 번째로 잡으세요. 순서가 중요할 수도 있어요.' },
+  layered: { title: '겉종이 등불', kicker: '새로운 등불', art: ['D2'], text: '밝은 겉종이가 한 겹 더 있어요. 첫 번째로 맞으면 겉종이만 벗겨지고, 두 번째에 터져요. 직접 쳐도 한 겹만 벗겨져요.' },
+  dir:     { title: '금띠 등불', kicker: '새로운 등불', art: ['-','H2','-','.','V2'], text: '금띠 방향으로만 불꽃이 나가요. 가로띠는 왼쪽과 오른쪽, 세로띠는 위와 아래로만.' },
+  fuse:    { title: '심지 등불', kicker: '새로운 등불', art: ['L1','-','F2'], text: '맞으면 심지에 불이 붙고 한 박자 뒤에 터져요. 불붙은 채 기다리는 동안에는 다른 불꽃을 막아요.' },
+  taps3:   { title: '세 번', kicker: '새로운 규칙', art: ['T3'], text: '세 번 칠 수 있어요. 판을 세 무리로 나눠 보세요.' },
+};
+const ORDER = ['intro','sleep','preview','rock','taps2','layered','dir','fuse','taps3'];
+function featuresOf(idx) {
+  const lv = LEVELS[idx], f = new Set(['intro']);
+  if (lv.sleep.length) f.add('sleep');
+  if (idx >= 3) f.add('preview');
+  if (lv.rocks.length) f.add('rock');
+  if (lv.k === 2) f.add('taps2');
+  if (lv.k >= 3) f.add('taps3');
+  if (lv.lanterns.some(x => x[3] > 1)) f.add('layered');
+  if (lv.lanterns.some(x => x[4] === 1 || x[4] === 2)) f.add('dir');
+  if (lv.lanterns.some(x => x[4] === 3)) f.add('fuse');
+  return ORDER.filter(k => f.has(k));
+}
+function cardHTML(key) {
+  const c = CARDS[key];
+  if (key === 'intro') return `<div class="kicker">${c.kicker}</div><h4>${c.title}</h4>` + c.steps.map(([a, t]) => `<div class="step">${mini(a)}<p>${t}</p></div>`).join('');
+  return `<div class="kicker">${c.kicker}</div><h4>${c.title}</h4>${mini(c.art)}<p>${c.text}</p>`;
+}
+function showCard(html, label = '알겠어요') {
+  return new Promise(res => {
+    const wrap = $('cards'), card = $('card');
+    card.innerHTML = html + `<div class="actions"><button class="primary" id="cardOk">${label}</button></div>`;
+    wrap.classList.add('show');
+    const ok = $('cardOk'); ok.focus({ preventScroll: true, focusVisible: false });
+    ok.onclick = () => { audio(); wrap.classList.remove('show'); res(); };
+  });
+}
+async function showNewCards(idx) {
+  for (const k of featuresOf(idx)) if (!save.seen[k]) { await showCard(cardHTML(k), k === 'intro' ? '시작하기' : '알겠어요'); save.seen[k] = true; persist(); }
+}
+function openGlossary() {
+  const seen = ORDER.filter(k => save.seen[k] && k !== 'intro');
+  const html = cardHTML('intro') + seen.map(k => `<div class="gl">${mini(CARDS[k].art)}<b>${CARDS[k].title}</b><p>${CARDS[k].text}</p></div>`).join('');
+  showCard(html, '닫기');
+}
+
+// ---------- sky ----------
+function renderSky(idx, highlightNew = -1) {
+  const ch = chOf(idx), C = CH[ch], sky = $('sky');
+  const lit = i => !!save.done[ch * 10 + i];
+  const complete = C.stars.every((_, i) => lit(i));
+  let s = `<svg viewBox="0 0 100 42" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><filter id="glow" x="-2" y="-2" width="5" height="5"><feGaussianBlur stdDeviation="0.7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  C.edges.forEach(([a, b], k) => { const [x1,y1] = C.stars[a], [x2,y2] = C.stars[b];
+    s += `<line class="edge${lit(a) && lit(b) && a !== highlightNew && b !== highlightNew ? ' on' : ''}" data-a="${a}" data-b="${b}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; });
+  C.stars.forEach(([x, y], i) => {
+    const on = lit(i) && i !== highlightNew, cur = ch * 10 + i === idx && !lit(i);
+    s += `<circle class="st${on ? ' on' : ''}${cur ? ' cur' : ''}" data-i="${i}" cx="${x}" cy="${y}" r="${i === 9 && ch === 0 ? 1.5 : 1.1}"/>`;
+  });
+  s += '</svg>';
+  sky.innerHTML = s + `<div class="name">${C.sky}</div>`;
+  sky.classList.toggle('complete', complete && highlightNew < 0);
+}
+function lightStar(i) {
+  const st = $('sky').querySelector(`.st[data-i="${i}"]`); if (!st) return;
+  st.classList.remove('cur'); st.classList.add('on', 'pop'); ting();
+  $('sky').querySelectorAll('.edge').forEach(e => { const a = +e.dataset.a, b = +e.dataset.b, ch = chOf(G.idx);
+    if ((a === i || b === i) && save.done[ch * 10 + a] && save.done[ch * 10 + b]) requestAnimationFrame(() => e.classList.add('on')); });
+}
+
+// ---------- game ----------
+let G = null;
+const board = $('board');
+async function load(idx) {
+  const lv = LEVELS[idx];
+  document.documentElement.dataset.ch = chOf(idx);
+  G = { idx, n: lv.n, k: lv.k, used: 0, busy: true, over: false,
+        lan: new Map(lv.lanterns.map(([r,c,s,l,t]) => [r*lv.n+c, { s, l, t }])),
+        rocks: new Set(lv.rocks.map(([r,c]) => r*lv.n+c)),
+        sleep: new Map(lv.sleep.map(([r,c]) => [r*lv.n+c, {}])) };
+  const myG = G;
+  board.style.setProperty('--n', lv.n); board.innerHTML = ''; board.className = 'board pre';
+  for (let i = 0; i < lv.n*lv.n; i++) {
+    const r = Math.floor(i/lv.n), c = i%lv.n;
+    const cell = document.createElement('div'); cell.className = 'cell';
+    cell.style.left = (c*100/lv.n)+'%'; cell.style.top = (r*100/lv.n)+'%';
+    const rise = document.createElement('div'); rise.className = 'rise';
+    rise.style.animationDelay = (c * 45 + (lv.n - r) * 35 + Math.random() * 60) + 'ms';
+    if (G.rocks.has(i)) rise.innerHTML = '<div class="rock"></div>';
+    else if (G.sleep.has(i)) {
+      rise.innerHTML = lanHTML(2, { sleep: true }); const d = rise.firstChild;
+      d.style.animationDelay = (-Math.random()*6)+'s'; d.setAttribute('aria-label', '잠든 등불, 깨우면 안 됨');
+      d.addEventListener('pointerdown', () => { audio(); if (!G.busy && !G.over) { d.classList.remove('hit'); void d.offsetWidth; d.classList.add('hit'); soft(); } });
+      G.sleep.get(i).el = d;
+    } else if (G.lan.has(i)) {
+      const L = G.lan.get(i);
+      rise.innerHTML = lanHTML(L.s, { band: L.t === 1 ? 'h' : L.t === 2 ? 'v' : null, fuse: L.t === 3, veil: L.l > 1 });
+      const d = rise.firstChild; d.style.animationDelay = (-Math.random()*3.4)+'s';
+      d.setAttribute('role','button'); d.tabIndex = 0;
+      d.setAttribute('aria-label', `등불, 불꽃 ${L.s}칸` + (L.t === 1 ? ', 가로로만' : L.t === 2 ? ', 세로로만' : L.t === 3 ? ', 심지' : '') + (L.l > 1 ? ', 겉종이' : ''));
+      let held = false, timer = null;
+      d.addEventListener('pointerdown', () => { audio(); if (G.busy || G.over) return; held = false; preview(i, true); timer = setTimeout(() => { held = true; }, 380); });
+      const release = () => { clearTimeout(timer); preview(i, false); };
+      d.addEventListener('pointerup', () => { if (G.busy || G.over) return; release(); if (!held) tap(i); });
+      d.addEventListener('pointerleave', release); d.addEventListener('pointercancel', release);
+      d.addEventListener('contextmenu', e => e.preventDefault());
+      d.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); audio(); tap(i); } });
+      L.el = d;
+    }
+    cell.appendChild(rise); board.appendChild(cell);
+  }
+  const combo = document.createElement('div'); combo.className = 'combo'; combo.id = 'combo'; board.appendChild(combo);
+  $('lvl').textContent = `${idx+1} / ${LEVELS.length}`;
+  $('prev').hidden = idx === 0;
+  $('next').hidden = !(idx + 1 < LEVELS.length && (save.done[idx] || idx + 1 <= save.unlocked));
+  renderTaps(); renderSky(idx);
+  await showNewCards(idx);
+  if (G !== myG) return;
+  board.classList.remove('pre'); board.classList.add('enter');
+  const maxDelay = Math.max(...[...board.querySelectorAll('.rise')].map(r => parseFloat(r.style.animationDelay)));
+  await sleep(Math.min(700, maxDelay + 350));
+  if (G === myG) G.busy = false;
+  setTimeout(() => { if (G === myG) board.classList.remove('enter'); }, maxDelay + 1000);
+}
+function renderTaps() { const t = $('taps'); t.innerHTML = ''; for (let i = 0; i < G.k; i++) { const d = document.createElement('i'); if (i < G.used) d.classList.add('used'); t.appendChild(d); } }
+function center(i) { const n = G.n, cs = board.clientWidth / n; return { x: (i % n) * cs + cs/2, y: Math.floor(i/n) * cs + cs/2, cs }; }
+function trace(p, dr, dc, s) {
+  const r0 = Math.floor(p/G.n), c0 = p%G.n; let reach = 0;
+  for (let d = 1; d <= s; d++) {
+    const r = r0+dr*d, c = c0+dc*d;
+    if (r<0||r>=G.n||c<0||c>=G.n) break;
+    const q = r*G.n+c; if (G.rocks.has(q)) break;
+    reach = d;
+    if (G.sleep.has(q)) return { reach, hit: q, sleeper: true };
+    if (G.lan.has(q)) return { reach, hit: q, sleeper: false };
+  }
+  return { reach, hit: null, sleeper: false };
+}
+let rays = [];
+function preview(i, on) {
+  rays.forEach(r => r.remove()); rays = [];
+  board.querySelectorAll('.target').forEach(e => e.classList.remove('target'));
+  if (!on || !G.lan.has(i)) return;
+  const L = G.lan.get(i), {x,y,cs} = center(i), yc = y - cs * .07;
+  for (const [dr,dc] of dirsFor(L.t)) {
+    const t = trace(i, dr, dc, L.s); if (!t.reach) continue;
+    const ray = document.createElement('div'); ray.className = 'ray';
+    const len = cs * t.reach - (t.hit !== null ? cs*0.3 : 0) - cs*0.25;
+    ray.style.left = (x + dc*cs*0.25)+'px'; ray.style.top = (yc + dr*cs*0.25)+'px'; ray.style.width = Math.max(0,len)+'px';
+    ray.style.transform = `rotate(${Math.atan2(dr, dc)}rad)`;
+    board.appendChild(ray); rays.push(ray); requestAnimationFrame(() => ray.classList.add('show'));
+    if (t.hit !== null) (t.sleeper ? G.sleep.get(t.hit).el : G.lan.get(t.hit).el).classList.add('target');
+  }
+}
+function paperBurst(i, s, big = false) {
+  const {x, y, cs} = center(i), yc = y - cs * .07;
+  const g = document.createElement('div'); g.className = 'glow' + (big ? ' big' : '');
+  const gs = cs * (0.9 + s * 0.35) * (big ? 2.2 : 1); g.style.width = g.style.height = gs+'px'; g.style.left = x+'px'; g.style.top = yc+'px';
+  board.appendChild(g); setTimeout(() => g.remove(), big ? 2100 : 1250);
+  const cols = ['var(--l-light)', 'var(--l-mid)', 'var(--l-dark)', 'var(--l-scrap)'];
+  const cnt = (8 + s * 2) * (big ? 2.5 : 1);
+  for (let k = 0; k < cnt; k++) {
+    const e = document.createElement('div'); e.className = 'scrap';
+    const w = 5 + Math.random() * 7, h = 6 + Math.random() * 9;
+    e.style.width = w+'px'; e.style.height = h+'px'; e.style.left = (x - w/2)+'px'; e.style.top = (yc - h/2)+'px'; e.style.background = cols[k % cols.length];
+    const a = Math.random() * Math.PI * 2, d = cs * (0.35 + Math.random() * 0.4 * s) * (big ? 1.8 : 1);
+    e.style.setProperty('--x0', Math.cos(a)*d+'px'); e.style.setProperty('--y0', (Math.sin(a)*d - cs*0.2)+'px');
+    e.style.setProperty('--sw', (12 + Math.random()*16) * (Math.random()<.5?-1:1) + 'px'); e.style.setProperty('--fall', (cs * (1 + Math.random()*1.2) * (big ? 1.6 : 1))+'px');
+    e.style.setProperty('--r0', (Math.random()*180-90)+'deg'); e.style.setProperty('--r1', (Math.random()*360)+'deg'); e.style.setProperty('--r2', (Math.random()*540)+'deg');
+    const dur = (1100 + Math.random() * 600) * (big ? 1.6 : 1); e.style.setProperty('--d', dur+'ms');
+    board.appendChild(e); setTimeout(() => e.remove(), dur + 50);
+  }
+}
+function goldDust(cnt) {
+  const b = board.getBoundingClientRect();
+  for (let k = 0; k < cnt; k++) {
+    const e = document.createElement('div'); e.className = 'gold';
+    e.style.left = (b.left + Math.random() * b.width) + 'px'; e.style.top = (b.top + Math.random() * b.height) + 'px';
+    e.style.setProperty('--gx', (Math.random()*80-40)+'px'); e.style.setProperty('--gy', (-40 - Math.random()*90)+'px');
+    const d = 900 + Math.random()*900; e.style.setProperty('--d', d+'ms'); document.body.appendChild(e); setTimeout(() => e.remove(), d + 50);
+  }
+}
+const DUR = 110;
+function leaf(from, dr, dc, reach) {
+  const {x,y,cs} = center(from), yc = y - cs * .07;
+  const p = document.createElement('div'); p.className = 'leaf';
+  p.style.left = x+'px'; p.style.top = yc+'px'; p.style.transitionDuration = (DUR*reach)+'ms'; p.style.transform = 'rotate(0deg)';
+  board.appendChild(p);
+  requestAnimationFrame(() => requestAnimationFrame(() => { p.style.transform = `translate(${dc*cs*reach}px, ${dr*cs*reach}px) rotate(${220*reach}deg)`; }));
+  setTimeout(() => { p.style.opacity = '0'; }, DUR*reach); setTimeout(() => p.remove(), DUR*reach + 200);
+}
+function peel(pos, T) {
+  T.el.classList.add('cracked'); T.el.classList.remove('hit'); void T.el.offsetWidth; T.el.classList.add('hit'); soft(); paperBurst(pos, 1);
+}
+function showCombo(n, final = false) {
+  const c = $('combo'); if (!c || n < 5) return;
+  c.textContent = '×' + n; c.classList.remove('out', 'bump'); c.classList.add('on'); void c.offsetWidth; c.classList.add('bump');
+  if (final) setTimeout(() => c.classList.add('out'), 500);
+}
+function flashWarm(v) { const w = $('warm'); w.style.transition = 'none'; w.style.opacity = v; requestAnimationFrame(() => { w.style.transition = 'opacity .8s ease-out'; w.style.opacity = 0; }); }
+function shake() { board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake'); }
+async function tap(i) {
+  if (!G || G.busy || G.over || !G.lan.has(i)) return;
+  G.busy = true; G.used++; renderTaps();
+  const L = G.lan.get(i); L.l--;
+  if (L.l > 0) { peel(i, L); buzz(15); await sleep(300); }
+  else {
+    if (L.t === 3) { L.el.classList.add('lit'); fizz(); await sleep(260); }
+    const woke = await chain(i); if (woke) return finish(false, true);
+  }
+  G.busy = false;
+  if (G.lan.size === 0) return finish(true);
+  if (G.used >= G.k) return finish(false);
+}
+async function chain(start) {
+  const sched = new Map([[0, [start]]]), done = new Set([start]);
+  let w = 0, total = 0, woke = false;
+  while (!woke && [...sched.keys()].some(k => k >= w)) {
+    const wave = (sched.get(w) || []).filter(p => G.lan.has(p)); sched.delete(w);
+    if (!wave.length) { await sleep(DUR * 2 + 60); w++; continue; }
+    let finale = G.lan.size === wave.length;
+    if (finale) { const keep = wave.map(p => [p, G.lan.get(p)]); wave.forEach(p => G.lan.delete(p));
+      finale = !keep.some(([p, L]) => dirsFor(L.t).some(([dr,dc]) => trace(p, dr, dc, L.s).sleeper));
+      keep.forEach(([p, L]) => G.lan.set(p, L)); }
+    if (finale) await sleep(220);
+    total += wave.length;
+    if (finale) { shake(); flashWarm(1); buzz(60); resolve(); if (total >= 8) goldDust(40); }
+    else if (wave.length >= 3 || total >= 5) { shake(); flashWarm(Math.min(1, .35 + .12 * wave.length)); }
+    if (!finale && total >= 12 && wave.length >= 2) goldDust(12);
+    if (!finale) buzz(Math.min(40, 10 + wave.length * 6));
+    let maxReach = 0;
+    wave.forEach((p, idx) => {
+      const L = G.lan.get(p); G.lan.delete(p);
+      const tr = dirsFor(L.t).map(([dr,dc]) => ({dr, dc, ...trace(p, dr, dc, L.s)}));
+      L.el.classList.add(finale ? 'finale' : 'burst'); if (!finale) pop(L.s, w, idx * 0.025);
+      paperBurst(p, L.s, finale);
+      setTimeout(() => L.el.remove(), finale ? 520 : 170);
+      for (const t of tr) {
+        if (!t.reach) continue;
+        leaf(p, t.dr, t.dc, t.reach); maxReach = Math.max(maxReach, t.reach);
+        if (t.hit === null) continue;
+        if (t.sleeper) {
+          woke = true; const el = G.sleep.get(t.hit).el;
+          setTimeout(() => { el.querySelector('.zz').textContent = '!'; el.classList.add('woke'); yawn(); buzz(80); }, DUR * t.reach);
+          continue;
+        }
+        const T = G.lan.get(t.hit); if (!T) continue;
+        T.l--;
+        if (T.l <= 0) {
+          if (!done.has(t.hit)) {
+            done.add(t.hit); const dw = w + (T.t === 3 ? 2 : 1);
+            if (!sched.has(dw)) sched.set(dw, []); sched.get(dw).push(t.hit);
+            if (T.t === 3) setTimeout(() => { T.el.classList.add('lit'); fizz(); }, DUR * t.reach);
+          }
+        } else { const q = t.hit; setTimeout(() => peel(q, T), DUR * t.reach); }
+      }
+    });
+    showCombo(total, finale);
+    await sleep(DUR * Math.max(1, maxReach) + (finale ? 600 : 40));
+    w++;
+  }
+  if (!woke) showCombo(total, true);
+  return woke;
+}
+function rain() {
+  const cols = ['var(--l-light)', 'var(--l-mid)', 'var(--l-dark)', 'var(--l-scrap)', '#F6D27A'];
+  for (let k = 0; k < 70; k++) {
+    const e = document.createElement('div'); e.className = 'rain';
+    const w = 5 + Math.random()*8, h = 7 + Math.random()*10;
+    e.style.width = w+'px'; e.style.height = h+'px'; e.style.background = cols[k % cols.length];
+    e.style.left = Math.random()*100+'vw'; e.style.top = (-8 - Math.random()*20)+'vh';
+    e.style.setProperty('--dx', (Math.random()*120-60)+'px'); e.style.setProperty('--rr', (Math.random()*720-360)+'deg');
+    e.style.animationDuration = (3 + Math.random()*2.5)+'s'; e.style.animationDelay = (Math.random()*1.4)+'s';
+    document.body.appendChild(e); setTimeout(() => e.remove(), 7200);
+  }
+}
+async function flyToStar(i) {
+  const st = $('sky').querySelector(`.st[data-i="${i}"]`); if (!st) return;
+  const b = board.getBoundingClientRect(), s = st.getBoundingClientRect();
+  const f = document.createElement('div'); f.className = 'flyer';
+  const x0 = b.left + b.width / 2, y0 = b.top + b.height / 2;
+  f.style.left = x0 + 'px'; f.style.top = y0 + 'px'; document.body.appendChild(f);
+  await sleep(20);
+  f.style.transform = `translate(${s.left + s.width/2 - x0}px, ${s.top + s.height/2 - y0}px)`;
+  await sleep(760); f.style.opacity = '0'; setTimeout(() => f.remove(), 250);
+  lightStar(i);
+}
+async function finish(won, woke = false) {
+  G.over = true;
+  const ov = $('over'), idx = G.idx, ch = chOf(idx), si = idx % 10;
+  if (won) {
+    const first = !save.done[idx];
+    save.done[idx] = true; if (idx + 1 > save.unlocked) save.unlocked = idx + 1; persist();
+    await sleep(300);
+    if (first) { renderSky(idx, si); await flyToStar(si); } else await sleep(300);
+    const chapterDone = CH[ch].stars.every((_, i) => save.done[ch * 10 + i]);
+    await sleep(chapterDone && first ? 400 : 500);
+    if (chapterDone && first) { $('sky').classList.add('complete'); rain(); await sleep(900); }
+    else rain();
+    const last = idx + 1 >= LEVELS.length;
+    $('ovT').textContent = chapterDone && first ? CH[ch].sky : ['밤이 환해졌어요', '다 피었어요', '한 송이도 남김없이', '고요해졌어요'][idx % 4];
+    $('ovP').textContent = chapterDone && first ? `${CH[ch].name}의 별자리가 완성됐어요.` : last ? '준비된 스무 판을 전부 끝냈어요.' : '다음 밤으로.';
+    $('ovA').textContent = last ? '처음부터' : '다음';
+    $('ovA').onclick = () => { ov.classList.remove('show'); load(last ? 0 : idx + 1); };
+    $('ovB').textContent = '이 판 다시'; $('ovB').onclick = () => { ov.classList.remove('show'); load(idx); };
+  } else {
+    await sleep(650);
+    if (!woke) sad();
+    $('ovT').textContent = woke ? '깨워버렸어요' : '등불이 남았어요';
+    $('ovP').textContent = woke ? '잠든 등불에는 불꽃이 닿으면 안 돼요.' : `${G.lan.size}개가 아직 켜져 있어요.`;
+    $('ovA').textContent = '다시'; $('ovA').onclick = () => { ov.classList.remove('show'); load(idx); };
+    $('ovB').textContent = '규칙 다시 보기'; $('ovB').onclick = () => { ov.classList.remove('show'); openGlossary(); };
+  }
+  ov.classList.add('show');
+}
+$('retry').addEventListener('click', () => { audio(); if (G) load(G.idx); });
+$('prev').addEventListener('click', () => { if (G && G.idx > 0) load(G.idx - 1); });
+$('next').addEventListener('click', () => { if (G && G.idx + 1 < LEVELS.length) load(G.idx + 1); });
+$('help').addEventListener('click', () => { audio(); openGlossary(); });
+// ---------- title screen ----------
+const TITLE = $('title'), MAP = $('map');
+const TINTS = [['#FFC98A','#F08A4E','#C4452A','255,150,80','#3A2418'], ['#B4F0E0','#3FB5A6','#1C7A70','80,220,200','#16302C'], ['#F2C8F0','#B45FB0','#6E2C74','220,120,220','#2E1832'],
+               ['#FFE7A6','#F2B53C','#B9741A','255,200,90','#3A2810'], ['#FFD6DE','#F29AAE','#C0566E','255,160,180','#3A1C24']];
+function tint(el, ch) {
+  const t = TINTS[ch]; if (!t) return;
+  ['--l-light','--l-mid','--l-dark','--l-glow','--frame'].forEach((k, i) => el.style.setProperty(k, t[i]));
+  el.style.setProperty('--img-lan', `var(--img-${['orange','teal','purple','gold','pink'][ch]})`);
+}
+const chUnlocked = ch => ch * 10 < LEVELS.length && ch * 10 <= save.unlocked;
+function spawnFloater(first) {
+  const f = document.createElement('div'); f.className = 'fl';
+  const depth = Math.random(), sc = .5 + depth * .75, dur = 30 - depth * 12 + Math.random() * 6;
+  f.style.left = (4 + Math.random() * 88) + '%';
+  f.style.setProperty('--sc', sc); f.style.setProperty('--dur', dur + 's');
+  f.style.animationDelay = first ? (-Math.random() * dur) + 's' : '0s';
+  f.style.zIndex = Math.round(depth * 10); f.style.opacity = (.45 + depth * .55).toFixed(2);
+  if (depth < .3) f.style.filter = 'blur(1px)';
+  const opened = [0,1,2,3,4].filter(chUnlocked), ch = opened[Math.floor(Math.random() * opened.length)] || 0;
+  tint(f, Math.random() < .5 ? 0 : ch);
+  f.innerHTML = lanHTML([1,2,2,3][Math.floor(Math.random() * 4)]);
+  f.firstChild.style.animationDelay = (-Math.random() * 3.4) + 's';
+  f.addEventListener('pointerdown', e => { e.stopPropagation(); audio(); floaterPop(f, sc); });
+  f.addEventListener('animationend', e => { if (e.target === f) { f.remove(); spawnFloater(false); } });
+  $('floats').appendChild(f);
+}
+function floaterPop(f, sc) {
+  if (f.classList.contains('gone')) return; f.classList.add('gone');
+  const r = f.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .4, cs = r.width;
+  const cs2 = getComputedStyle(f), cols = ['--l-light','--l-mid','--l-dark','--l-scrap'].map(k => cs2.getPropertyValue(k).trim() || '#FFC98A');
+  const g = document.createElement('div'); g.className = 'glow tglow'; g.style.width = g.style.height = cs * 2.2 + 'px';
+  g.style.left = x + 'px'; g.style.top = y + 'px'; g.style.setProperty('--l-glow', cs2.getPropertyValue('--l-glow').trim());
+  TITLE.appendChild(g); setTimeout(() => g.remove(), 1250);
+  for (let k = 0; k < 14; k++) {
+    const e = document.createElement('div'); e.className = 'scrap tscrap';
+    const w = 4 + Math.random() * 6 * sc, h = 5 + Math.random() * 8 * sc;
+    e.style.width = w + 'px'; e.style.height = h + 'px'; e.style.left = (x - w/2) + 'px'; e.style.top = (y - h/2) + 'px'; e.style.background = cols[k % 4];
+    const a = Math.random() * Math.PI * 2, d = cs * (.4 + Math.random() * .7);
+    e.style.setProperty('--x0', Math.cos(a)*d+'px'); e.style.setProperty('--y0', (Math.sin(a)*d - cs*.2)+'px');
+    e.style.setProperty('--sw', (10 + Math.random()*14) * (Math.random()<.5?-1:1) + 'px'); e.style.setProperty('--fall', cs * (1.2 + Math.random()) + 'px');
+    e.style.setProperty('--r0', (Math.random()*180-90)+'deg'); e.style.setProperty('--r1', (Math.random()*360)+'deg'); e.style.setProperty('--r2', (Math.random()*540)+'deg');
+    const dur = 1100 + Math.random() * 600; e.style.setProperty('--d', dur + 'ms');
+    TITLE.appendChild(e); setTimeout(() => e.remove(), dur + 50);
+  }
+  pop(sc > .9 ? 3 : sc > .7 ? 2 : 1, Math.floor(Math.random() * 5)); buzz(12);
+  f.firstChild.classList.add('burst');
+  setTimeout(() => { f.remove(); spawnFloater(false); }, 200);
+}
+(() => { for (let i = 0; i < 13; i++) spawnFloater(true);
+  const st = $('tstars'); for (let i = 0; i < 46; i++) { const d = document.createElement('i'), z = Math.random() < .15 ? 2.2 : 1.2;
+    d.style.width = d.style.height = z + 'px'; d.style.left = Math.random()*100 + '%'; d.style.top = Math.random()*70 + '%';
+    d.style.opacity = (.2 + Math.random() * .6).toFixed(2); d.style.setProperty('--t', (2.5 + Math.random() * 4) + 's'); d.style.animationDelay = (-Math.random()*5)+'s'; st.appendChild(d); } })();
+
+function showTitle() {
+  G = null; board.innerHTML = ''; $('over').classList.remove('show');
+  const fresh = !save.unlocked && !save.seen.intro;
+  const cur = Math.min(save.unlocked, LEVELS.length - 1);
+  $('tPlay').innerHTML = fresh ? '시작하기' : `이어하기 <small>${cur + 1}단계</small>`;
+  $('tMap').hidden = fresh;
+  MAP.classList.remove('show'); TITLE.classList.remove('leave'); TITLE.classList.add('show');
+}
+function leaveTitle(idx) {
+  audio(); TITLE.classList.add('leave'); MAP.classList.remove('show');
+  setTimeout(() => { TITLE.classList.remove('show', 'leave'); load(idx); }, 480);
+}
+$('tPlay').addEventListener('click', () => leaveTitle(Math.min(save.unlocked, LEVELS.length - 1)));
+
+// ---------- chapter map ----------
+const SPOTS = [[-2,118],[42,88],[-2,58],[42,28],[20,-2]];   // 왼쪽 아래 1장에서 지그재그로 올라가 5장
+let mapSel = 0;
+function renderMap() {
+  const sel = mapSel;
+  let s = '<svg viewBox="0 0 100 156" aria-hidden="true"><defs><filter id="mglow" x="-2" y="-2" width="5" height="5"><feGaussianBlur stdDeviation="0.9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  const P = (ch, [x, y]) => [SPOTS[ch][0] + x * .6, SPOTS[ch][1] + 6 + y * .6];
+  let path = 'M'; CH.forEach((_, ch) => { const [x, y] = P(ch, [50, 22]); path += `${x.toFixed(1)} ${y.toFixed(1)} ${ch < 4 ? 'L' : ''}`; });
+  s += `<path class="trail" d="${path}"/>`;
+  CH.forEach((C, ch) => {
+    const open = chUnlocked(ch), lit = i => !!save.done[ch * 10 + i], cnt = C.stars.filter((_, i) => lit(i)).length;
+    s += `<g class="grp${open ? ' open' : ''}${ch === sel ? ' sel' : ''}${cnt === 10 ? ' full' : ''}" data-ch="${ch}">`;
+    const [bx, by] = P(ch, [0, 0]); s += `<rect class="hit" x="${bx}" y="${by - 4}" width="60" height="34" rx="4"/>`;
+    C.edges.forEach(([a, b]) => { const [x1, y1] = P(ch, C.stars[a]), [x2, y2] = P(ch, C.stars[b]);
+      s += `<line class="me${lit(a) && lit(b) ? ' on' : ''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; });
+    C.stars.forEach((st, i) => { const [x, y] = P(ch, st); s += `<circle class="ms${lit(i) ? ' on' : ''}" cx="${x}" cy="${y}" r="${lit(i) ? .95 : .7}"/>`; });
+    const [lx, ly] = P(ch, [50, 44]);
+    s += `<text class="ml" x="${lx}" y="${ly + 3.6}">${open || cnt ? C.sky : '· · ·'}</text></g>`;
+  });
+  s += '</svg>';
+  $('mapSky').innerHTML = s;
+  $('mapSky').querySelectorAll('.grp').forEach(g => g.addEventListener('click', () => {
+    const ch = +g.dataset.ch; audio(); if (!chUnlocked(ch)) { soft(); g.classList.remove('nope'); void g.getBoundingClientRect(); g.classList.add('nope'); return; }
+    mapSel = ch; ting(); renderMap(); }));
+  const C = CH[sel], cnt = C.stars.filter((_, i) => save.done[sel * 10 + i]).length;
+  let p = `<div class="mk">${sel + 1}장 · ${C.name}</div><div class="mn">${C.sky} <span>${cnt} / 10</span></div><div class="stages">`;
+  for (let i = 0; i < 10; i++) {
+    const idx = sel * 10 + i, exists = idx < LEVELS.length, done = !!save.done[idx], can = exists && idx <= save.unlocked;
+    p += `<button class="sg${done ? ' done' : ''}${can && !done ? ' now' : ''}" data-i="${idx}" ${can ? '' : 'disabled'} aria-label="${idx + 1}단계">${idx + 1}</button>`;
+  }
+  p += '</div>';
+  $('mapPanel').innerHTML = p;
+  $('mapPanel').querySelectorAll('.sg').forEach(b => b.addEventListener('click', () => leaveTitle(+b.dataset.i)));
+}
+$('tMap').addEventListener('click', () => { audio(); mapSel = chOf(Math.min(save.unlocked, LEVELS.length - 1)); renderMap(); MAP.classList.add('show'); });
+$('mapBack').addEventListener('click', () => { audio(); MAP.classList.remove('show'); });
+$('home').addEventListener('click', () => { audio(); showTitle(); });
+showTitle();
+})();
