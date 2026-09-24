@@ -8,7 +8,7 @@ async def main():
             pg=await b.new_page(viewport={'width':390,'height':844})
             errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)))
             await pg.goto('file://'+__import__('os').path.abspath('index.html')+'')
-            seen={k:True for k in ['intro','sleep','preview','rock','taps2','layered','dir','fuse','taps3']}
+            seen={k:True for k in ['intro','sleep','preview','rock','taps2','layered','dir','fuse','taps3','big','mirror','twin','star','board8']}
             done={str(i):True for i in range(idx)}
             await pg.evaluate(f"localStorage.setItem('lanternfall.save', JSON.stringify({{unlocked:{idx},done:{json.dumps(done)},seen:{json.dumps(seen)}}}))")
             await pg.reload(); await pg.wait_for_timeout(300)

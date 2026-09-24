@@ -108,13 +108,15 @@
   .lan.s3 { width: 53%; height: 77%; margin-top: -20%; }
   .lan .string { position: absolute; left: 50%; top: -26%; width: 1px; height: 26%; background: rgba(239,230,214,.25); }
   /* 등불 몸통은 제미나이 그림(assets.md 1번). 장마다 색만 바꾼 그림을 --img-lan으로 갈아 끼운다 */
-  .lan .paper { position: absolute; inset: 0; background: var(--img-lan) center / 100% 100% no-repeat;
-    --shine: drop-shadow(0 0 7px rgba(var(--l-glow),.55)) drop-shadow(0 0 20px rgba(var(--l-glow),.22)); filter: var(--shine); }
+  .lan .paper { position: absolute; inset: 0; background: var(--img-lan) center / 100% 100% no-repeat; }
+  .lan::before { content: ""; position: absolute; left: -45%; right: -45%; top: -30%; bottom: -25%; pointer-events: none; z-index: -1;
+    background: radial-gradient(ellipse at 50% 55%, rgba(var(--l-glow),.42), rgba(var(--l-glow),.14) 40%, transparent 68%); }
+  .lan { will-change: transform; }
   .lan .cap { display: none; }
   .lan .knots { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); display: flex; gap: 3px; margin-top: 1px; }
   .lan .knots i { width: 5px; height: 8px; border-radius: 50% 50% 45% 45%; background: var(--gold); box-shadow: 0 0 6px rgba(246,210,122,.8); }
   .lan .knots i:nth-child(2) { margin-top: 3px; } .lan .knots i:nth-child(3) { margin-top: 1px; }
-  .lan.target .paper { filter: brightness(1.35) var(--shine); }
+  .lan.target .paper { filter: brightness(1.35); }
   @keyframes sway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
   .lan .band { position: absolute; background: linear-gradient(90deg, #C8902E, #FFF1BE 50%, #C8902E); box-shadow: 0 0 10px rgba(246,210,122,.75); border-radius: 3px; }
   .lan .band.h { left: -10%; right: -10%; top: 46%; height: 8%; }
@@ -129,16 +131,50 @@
   .lan.hit { animation: hit .3s ease !important; }
   @keyframes hit { 0%,100% { transform: scale(1); } 40% { transform: scale(1.18); } }
   .lan.sleep { cursor: default; animation-duration: 6s; }
-  .lan.sleep .paper { background-image: var(--img-sleep); filter: drop-shadow(0 0 8px rgba(120,140,200,.22)); }
+  .lan.sleep .paper { background-image: var(--img-sleep); }
+  .lan.sleep::before { background: radial-gradient(ellipse at 50% 55%, rgba(120,140,200,.22), transparent 62%); }
   .lan.sleep .eyes { position: absolute; left: 0; right: 0; top: 48%; display: flex; justify-content: center; gap: 18%; }
   .lan.sleep .eyes i { width: 16%; height: 6px; border-bottom: 2px solid rgba(20,24,40,.7); border-radius: 0 0 50% 50%; }
   .lan.sleep .zz { position: absolute; right: -18%; top: -14%; font-family: var(--serif); font-style: italic; font-size: 13px; color: #AEB8DA; animation: zz 2.6s infinite; }
   @keyframes zz { 0% { transform: translateY(0); opacity: .3; } 50% { opacity: .85; } 100% { transform: translateY(-9px); opacity: 0; } }
   .lan.woke { animation: woke .55s ease !important; }
-  .lan.woke .paper { background-image: var(--img-pink); filter: saturate(1.5) hue-rotate(-8deg) drop-shadow(0 0 12px rgba(255,90,120,.7)); }
+  .lan.woke .paper { background-image: var(--img-pink); filter: saturate(1.5) hue-rotate(-8deg); }
+  .lan.woke::before { background: radial-gradient(ellipse at 50% 55%, rgba(255,90,120,.6), transparent 65%); }
   .lan.woke .eyes i { height: 8px; width: 9%; border: 2px solid rgba(20,24,40,.8); border-radius: 50%; }
   @keyframes woke { 0%,100% { transform: none; } 20% { transform: translateX(-6px) rotate(-9deg); } 40% { transform: translateX(6px) rotate(9deg); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
-  .rock { width: 64%; height: 44%; background: var(--img-rock) center / 100% 100% no-repeat; filter: brightness(.82) drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+  /* ---------- 3~5장 요소 ---------- */
+  .lan.big { animation-duration: 8s; }
+  .lan.big .paper { opacity: .85; }
+  .lan.big .eyes i { border-bottom-width: 3px; }
+  .lan.big .zz { font-size: 15px; color: #C6CFEA; }
+  .lan.stir { animation: stir .9s ease !important; }
+  @keyframes stir { 0%,100% { transform: none; } 25% { transform: rotate(-7deg) translateX(-3px); } 55% { transform: rotate(6deg) translateX(3px); } 80% { transform: rotate(-2deg); } }
+  .mirror { width: 78%; height: 78%; position: relative; display: flex; align-items: center; justify-content: center; }
+  .mirror i { display: block; width: 92%; height: 13%; border-radius: 4px; transform: rotate(-45deg);
+    background: linear-gradient(90deg, #6B4A22, #E9C98A 30%, #FFF6DC 50%, #E9C98A 70%, #6B4A22); box-shadow: 0 0 0 1.5px #3A2810, 0 0 12px rgba(246,210,122,.35), 0 2px 4px rgba(0,0,0,.5); position: relative; }
+  .mirror.b i { transform: rotate(45deg); }
+  .mirror i::after { content: ""; position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: #3A2810; }
+  .mirror.target i { box-shadow: 0 0 0 1.5px #3A2810, 0 0 16px 4px rgba(246,210,122,.8); }
+  .mirror.flash i { animation: mflash .35s ease-out; }
+  @keyframes mflash { 0% { filter: brightness(2.6); } 100% { filter: none; } }
+  /* 쌍둥이 문양: SVG(오방색 둥근 바탕 + 한글 한 글자). 크기는 등불 폭에 따른다 */
+  .lan .mark { position: absolute; left: 50%; top: 44%; width: 48%; height: auto; transform: translate(-50%,-50%); pointer-events: none; overflow: visible;
+    animation: sealpulse 2.2s ease-in-out infinite alternate; }
+  .lan.s1 .mark { width: 54%; }
+  @keyframes sealpulse { from { opacity: .82; } to { opacity: 1; } }
+  .lan.call .paper { animation: call .5s ease-in-out 2; }
+  @keyframes call { 50% { filter: brightness(1.8); } }
+  .lan .halo { position: absolute; left: 50%; top: 44%; width: 190%; height: 150%; transform: translate(-50%,-50%); pointer-events: none;
+    background: repeating-conic-gradient(from -4deg, rgba(255,232,160,.85) 0 8deg, transparent 8deg 45deg);
+    -webkit-mask: radial-gradient(circle, transparent 30%, #000 34%, #000 47%, transparent 52%); mask: radial-gradient(circle, transparent 30%, #000 34%, #000 47%, transparent 52%);
+    animation: spin 18s linear infinite, haloglow 2.4s ease-in-out infinite alternate; }
+  @keyframes haloglow { from { opacity: .55; } to { opacity: 1; } }
+  @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .mini .mc.mv::before { left: 48%; right: auto; width: 2px; height: 100%; top: 0; background: repeating-linear-gradient(180deg, rgba(246,210,122,.95) 0 5px, transparent 5px 8px); }
+  .mini .mc.mL::before { width: 50%; left: 0; } .mini .mc.mL::after { content: ""; position: absolute; left: 50%; top: 43%; width: 2px; height: 57%; background: repeating-linear-gradient(180deg, rgba(246,210,122,.95) 0 5px, transparent 5px 8px); }
+  .mini .mc.mdiag::before { transform: rotate(45deg); }
+  .mini .mc .mirror { width: 60%; height: 60%; }
+  .rock { width: 64%; height: 44%; background: var(--img-rock) center / 100% 100% no-repeat; opacity: .85; }
 
   /* ---------- burst ---------- */
   .lan.burst { animation: burst .16s ease-out forwards !important; pointer-events: none; }
@@ -311,11 +347,13 @@
 </div>
 <script>
 (() => {
-const LEVELS = [{"n":5,"k":1,"lanterns":[[0,1,1,1,0],[0,3,2,1,0],[2,4,3,1,0],[2,1,1,1,0],[2,3,1,1,0],[0,0,2,1,0],[1,1,1,1,0]],"rocks":[],"sleep":[]},{"n":5,"k":1,"lanterns":[[0,0,1,1,0],[2,1,1,1,0],[1,0,2,1,0],[0,3,1,1,0],[2,0,1,1,0],[3,0,1,1,0],[1,1,1,1,0],[3,3,3,1,0]],"rocks":[],"sleep":[]},{"n":5,"k":1,"lanterns":[[4,1,3,1,0],[0,4,3,1,0],[0,3,3,1,0],[0,2,1,1,0],[1,2,2,1,0],[1,1,2,1,0],[4,2,1,1,0],[2,4,1,1,0]],"rocks":[],"sleep":[[4,4]]},{"n":5,"k":1,"lanterns":[[3,2,3,1,0],[1,2,1,1,0],[2,0,1,1,0],[2,1,1,1,0],[0,3,1,1,0],[3,3,3,1,0],[0,1,3,1,0],[0,2,3,1,0],[1,1,3,1,0]],"rocks":[],"sleep":[[4,1],[1,4]]},{"n":6,"k":1,"lanterns":[[5,1,1,1,0],[4,2,3,1,0],[0,2,3,1,0],[0,0,2,1,0],[3,3,2,1,0],[5,3,2,1,0],[0,3,2,1,0],[1,3,1,1,0],[4,3,1,1,0],[0,1,1,1,0]],"rocks":[[2,5],[2,2],[1,5]],"sleep":[[4,5]]},{"n":6,"k":2,"lanterns":[[0,2,1,1,0],[2,0,1,1,0],[2,3,2,1,0],[3,0,3,1,0],[5,1,2,1,0],[0,5,3,1,0],[1,2,2,1,0],[4,3,3,1,0],[2,1,3,1,0]],"rocks":[],"sleep":[[0,0]]},{"n":6,"k":2,"lanterns":[[2,1,1,1,0],[2,0,2,1,0],[5,0,3,1,0],[1,3,2,1,0],[3,5,2,1,0],[3,2,3,1,0],[0,5,3,1,0],[1,2,2,1,0],[5,1,1,1,0],[0,2,2,1,0]],"rocks":[[5,5],[0,0]],"sleep":[[5,3]]},{"n":6,"k":2,"lanterns":[[0,3,1,1,0],[0,1,2,1,0],[5,0,3,1,0],[2,1,1,1,0],[3,1,3,1,0],[3,4,2,1,0],[2,0,3,2,0],[5,2,2,2,0],[1,0,2,1,0],[0,0,2,1,0]],"rocks":[],"sleep":[[2,3]]},{"n":7,"k":2,"lanterns":[[2,3,3,1,0],[2,4,1,1,0],[0,3,3,1,0],[0,0,3,1,0],[3,6,3,1,0],[5,2,3,1,0],[0,6,2,1,0],[5,3,1,1,0],[2,2,2,1,0],[1,2,3,1,0],[1,1,3,1,0],[6,6,1,1,0]],"rocks":[[2,5],[2,1],[6,5],[4,3]],"sleep":[[5,5]]},{"n":7,"k":2,"lanterns":[[5,5,3,1,0],[5,3,2,1,0],[1,5,2,1,0],[0,3,3,1,0],[2,1,1,1,0],[1,4,1,1,0],[3,5,2,1,0],[1,1,3,1,0],[2,2,2,1,0],[0,5,1,1,0],[2,0,2,2,0]],"rocks":[[6,6],[5,6],[3,6]],"sleep":[[4,1]]},{"n":6,"k":1,"lanterns":[[4,4,3,1,0],[1,0,3,1,0],[2,0,2,1,2],[4,1,2,1,2],[3,5,3,1,0],[1,3,2,1,0],[4,0,2,1,0],[2,1,3,1,0],[4,5,3,1,1]],"rocks":[],"sleep":[]},{"n":6,"k":1,"lanterns":[[1,0,1,1,0],[0,4,1,1,0],[4,1,2,1,2],[5,0,3,1,0],[1,3,3,1,0],[5,1,3,1,0],[2,0,3,1,1],[0,5,3,1,0],[4,3,2,1,0],[1,5,3,1,1]],"rocks":[],"sleep":[[0,2]]},{"n":6,"k":2,"lanterns":[[3,5,1,1,0],[4,4,3,1,0],[1,0,3,1,0],[2,5,3,1,2],[0,2,1,1,0],[4,1,2,1,0],[0,5,1,1,0],[5,4,2,1,2],[4,0,1,1,0],[4,2,2,1,1],[0,4,2,1,0]],"rocks":[],"sleep":[[5,5]]},{"n":6,"k":1,"lanterns":[[2,0,1,1,3],[2,3,3,1,0],[3,5,1,1,0],[2,2,1,1,0],[4,4,3,1,0],[1,2,3,1,0],[1,4,2,1,0],[5,2,3,1,0],[3,4,3,1,3]],"rocks":[],"sleep":[]},{"n":7,"k":2,"lanterns":[[1,2,1,1,0],[5,2,3,1,0],[1,4,3,1,0],[1,0,2,1,0],[5,6,3,1,0],[0,0,1,1,3],[4,6,1,1,0],[1,6,1,1,0],[0,3,3,1,0],[3,0,1,1,0],[5,5,3,1,3],[4,4,2,1,0]],"rocks":[[6,6],[3,1],[2,1]],"sleep":[]},{"n":7,"k":2,"lanterns":[[3,4,1,1,0],[6,0,2,1,0],[3,3,3,1,3],[4,6,1,1,0],[6,5,1,1,3],[1,6,1,1,0],[6,4,3,1,0],[1,3,3,2,0],[6,3,3,1,0],[4,4,2,2,0],[5,4,3,1,0],[4,2,3,1,0]],"rocks":[[5,3],[0,1]],"sleep":[]},{"n":7,"k":2,"lanterns":[[6,0,2,1,3],[6,6,2,1,1],[3,6,3,1,2],[1,3,1,1,0],[3,5,1,1,0],[0,6,1,1,0],[6,3,3,1,1],[2,0,3,1,0],[2,5,3,1,0],[2,4,3,1,0],[5,0,2,1,0],[2,3,1,1,3]],"rocks":[[5,1],[3,0]],"sleep":[]},{"n":7,"k":3,"lanterns":[[1,2,1,1,0],[2,3,1,1,0],[1,4,2,1,0],[1,3,2,1,0],[2,5,2,1,0],[4,0,1,1,0],[4,2,2,1,0],[6,2,1,1,0],[5,0,2,1,0],[6,4,1,1,0],[4,4,2,1,0],[6,5,2,1,0],[4,6,1,1,0]],"rocks":[[3,1],[3,5],[4,3]],"sleep":[]},{"n":7,"k":2,"lanterns":[[2,5,2,1,0],[6,6,2,1,1],[2,2,3,1,0],[5,1,1,1,0],[5,6,3,1,0],[5,5,1,1,0],[6,1,2,1,2],[4,5,2,1,0],[0,5,3,1,0],[1,2,1,1,0],[3,1,2,1,2],[1,5,3,1,0]],"rocks":[[0,0],[0,4],[5,2]],"sleep":[[5,3]]},{"n":7,"k":3,"lanterns":[[2,2,2,1,0],[0,0,1,1,0],[1,0,2,1,0],[2,0,1,1,3],[0,5,2,1,0],[2,5,2,1,1],[2,4,1,1,0],[2,6,1,1,0],[5,1,2,1,0],[5,0,2,1,2],[6,4,2,1,3],[5,3,1,1,0],[5,4,2,1,0],[5,6,1,1,0]],"rocks":[[2,3],[3,3],[3,0],[3,6]],"sleep":[]}];
+const LEVELS = [{"n":5,"k":1,"lanterns":[[0,1,1,1,0],[0,3,2,1,0],[2,4,3,1,0],[2,1,1,1,0],[2,3,1,1,0],[0,0,2,1,0],[1,1,1,1,0]],"rocks":[],"sleep":[]},{"n":5,"k":1,"lanterns":[[0,0,1,1,0],[2,1,1,1,0],[1,0,2,1,0],[0,3,1,1,0],[2,0,1,1,0],[3,0,1,1,0],[1,1,1,1,0],[3,3,3,1,0]],"rocks":[],"sleep":[]},{"n":5,"k":1,"lanterns":[[4,1,3,1,0],[0,4,3,1,0],[0,3,3,1,0],[0,2,1,1,0],[1,2,2,1,0],[1,1,2,1,0],[4,2,1,1,0],[2,4,1,1,0]],"rocks":[],"sleep":[[4,4]]},{"n":5,"k":1,"lanterns":[[3,2,3,1,0],[1,2,1,1,0],[2,0,1,1,0],[2,1,1,1,0],[0,3,1,1,0],[3,3,3,1,0],[0,1,3,1,0],[0,2,3,1,0],[1,1,3,1,0]],"rocks":[],"sleep":[[4,1],[1,4]]},{"n":6,"k":1,"lanterns":[[5,1,1,1,0],[4,2,3,1,0],[0,2,3,1,0],[0,0,2,1,0],[3,3,2,1,0],[5,3,2,1,0],[0,3,2,1,0],[1,3,1,1,0],[4,3,1,1,0],[0,1,1,1,0]],"rocks":[[2,5],[2,2],[1,5]],"sleep":[[4,5]]},{"n":6,"k":2,"lanterns":[[0,2,1,1,0],[2,0,1,1,0],[2,3,2,1,0],[3,0,3,1,0],[5,1,2,1,0],[0,5,3,1,0],[1,2,2,1,0],[4,3,3,1,0],[2,1,3,1,0]],"rocks":[],"sleep":[[0,0]]},{"n":6,"k":2,"lanterns":[[2,1,1,1,0],[2,0,2,1,0],[5,0,3,1,0],[1,3,2,1,0],[3,5,2,1,0],[3,2,3,1,0],[0,5,3,1,0],[1,2,2,1,0],[5,1,1,1,0],[0,2,2,1,0]],"rocks":[[5,5],[0,0]],"sleep":[[5,3]]},{"n":6,"k":2,"lanterns":[[0,3,1,1,0],[0,1,2,1,0],[5,0,3,1,0],[2,1,1,1,0],[3,1,3,1,0],[3,4,2,1,0],[2,0,3,2,0],[5,2,2,2,0],[1,0,2,1,0],[0,0,2,1,0]],"rocks":[],"sleep":[[2,3]]},{"n":7,"k":2,"lanterns":[[2,3,3,1,0],[2,4,1,1,0],[0,3,3,1,0],[0,0,3,1,0],[3,6,3,1,0],[5,2,3,1,0],[0,6,2,1,0],[5,3,1,1,0],[2,2,2,1,0],[1,2,3,1,0],[1,1,3,1,0],[6,6,1,1,0]],"rocks":[[2,5],[2,1],[6,5],[4,3]],"sleep":[[5,5]]},{"n":7,"k":2,"lanterns":[[5,5,3,1,0],[5,3,2,1,0],[1,5,2,1,0],[0,3,3,1,0],[2,1,1,1,0],[1,4,1,1,0],[3,5,2,1,0],[1,1,3,1,0],[2,2,2,1,0],[0,5,1,1,0],[2,0,2,2,0]],"rocks":[[6,6],[5,6],[3,6]],"sleep":[[4,1]]},{"n":6,"k":1,"lanterns":[[4,4,3,1,0],[1,0,3,1,0],[2,0,2,1,2],[4,1,2,1,2],[3,5,3,1,0],[1,3,2,1,0],[4,0,2,1,0],[2,1,3,1,0],[4,5,3,1,1]],"rocks":[],"sleep":[]},{"n":6,"k":1,"lanterns":[[1,0,1,1,0],[0,4,1,1,0],[4,1,2,1,2],[5,0,3,1,0],[1,3,3,1,0],[5,1,3,1,0],[2,0,3,1,1],[0,5,3,1,0],[4,3,2,1,0],[1,5,3,1,1]],"rocks":[],"sleep":[[0,2]]},{"n":6,"k":2,"lanterns":[[3,5,1,1,0],[4,4,3,1,0],[1,0,3,1,0],[2,5,3,1,2],[0,2,1,1,0],[4,1,2,1,0],[0,5,1,1,0],[5,4,2,1,2],[4,0,1,1,0],[4,2,2,1,1],[0,4,2,1,0]],"rocks":[],"sleep":[[5,5]]},{"n":6,"k":1,"lanterns":[[2,0,1,1,3],[2,3,3,1,0],[3,5,1,1,0],[2,2,1,1,0],[4,4,3,1,0],[1,2,3,1,0],[1,4,2,1,0],[5,2,3,1,0],[3,4,3,1,3]],"rocks":[],"sleep":[]},{"n":7,"k":2,"lanterns":[[1,2,1,1,0],[5,2,3,1,0],[1,4,3,1,0],[1,0,2,1,0],[5,6,3,1,0],[0,0,1,1,3],[4,6,1,1,0],[1,6,1,1,0],[0,3,3,1,0],[3,0,1,1,0],[5,5,3,1,3],[4,4,2,1,0]],"rocks":[[6,6],[3,1],[2,1]],"sleep":[]},{"n":7,"k":2,"lanterns":[[3,4,1,1,0],[6,0,2,1,0],[3,3,3,1,3],[4,6,1,1,0],[6,5,1,1,3],[1,6,1,1,0],[6,4,3,1,0],[1,3,3,2,0],[6,3,3,1,0],[4,4,2,2,0],[5,4,3,1,0],[4,2,3,1,0]],"rocks":[[5,3],[0,1]],"sleep":[]},{"n":7,"k":2,"lanterns":[[6,0,2,1,3],[6,6,2,1,1],[3,6,3,1,2],[1,3,1,1,0],[3,5,1,1,0],[0,6,1,1,0],[6,3,3,1,1],[2,0,3,1,0],[2,5,3,1,0],[2,4,3,1,0],[5,0,2,1,0],[2,3,1,1,3]],"rocks":[[5,1],[3,0]],"sleep":[]},{"n":7,"k":3,"lanterns":[[1,2,1,1,0],[2,3,1,1,0],[1,4,2,1,0],[1,3,2,1,0],[2,5,2,1,0],[4,0,1,1,0],[4,2,2,1,0],[6,2,1,1,0],[5,0,2,1,0],[6,4,1,1,0],[4,4,2,1,0],[6,5,2,1,0],[4,6,1,1,0]],"rocks":[[3,1],[3,5],[4,3]],"sleep":[]},{"n":7,"k":2,"lanterns":[[2,5,2,1,0],[6,6,2,1,1],[2,2,3,1,0],[5,1,1,1,0],[5,6,3,1,0],[5,5,1,1,0],[6,1,2,1,2],[4,5,2,1,0],[0,5,3,1,0],[1,2,1,1,0],[3,1,2,1,2],[1,5,3,1,0]],"rocks":[[0,0],[0,4],[5,2]],"sleep":[[5,3]]},{"n":7,"k":3,"lanterns":[[2,2,2,1,0],[0,0,1,1,0],[1,0,2,1,0],[2,0,1,1,3],[0,5,2,1,0],[2,5,2,1,1],[2,4,1,1,0],[2,6,1,1,0],[5,1,2,1,0],[5,0,2,1,2],[6,4,2,1,3],[5,3,1,1,0],[5,4,2,1,0],[5,6,1,1,0]],"rocks":[[2,3],[3,3],[3,0],[3,6]],"sleep":[]},{"n":7,"k":1,"lanterns":[[6,2,3,1,0],[0,4,2,1,0],[4,0,3,1,0],[6,4,2,1,0],[3,5,1,1,0],[5,0,2,1,0],[6,5,1,1,0],[3,4,3,1,0],[6,0,1,1,0],[4,3,3,1,0],[1,5,2,1,0]],"rocks":[[1,1]],"sleep":[[5,5,2]],"mirrors":[]},{"n":7,"k":1,"lanterns":[[4,6,3,1,1],[1,4,2,1,2],[0,4,3,1,0],[2,4,3,1,0],[3,2,3,1,0],[1,5,1,1,0],[3,5,2,1,0],[2,2,1,1,0],[2,1,2,1,0],[2,6,1,1,0],[3,6,3,1,0]],"rocks":[],"sleep":[[0,3,2],[0,2]],"mirrors":[]},{"n":7,"k":2,"lanterns":[[1,2,2,1,0],[3,2,2,2,0],[1,0,1,1,0],[3,1,2,1,0],[3,0,3,1,0],[6,1,2,1,0],[6,3,1,1,0],[0,2,1,1,0],[5,4,3,1,0],[1,4,2,1,0],[6,4,2,1,0],[5,0,2,1,0]],"rocks":[[1,6],[4,2]],"sleep":[[6,5,2]],"mirrors":[]},{"n":7,"k":2,"lanterns":[[0,5,3,1,3],[4,6,2,1,0],[3,2,3,1,0],[2,1,3,1,0],[1,5,3,1,0],[0,6,3,1,0],[5,2,2,1,0],[2,2,2,1,3],[6,0,3,1,0],[4,5,3,1,0],[4,1,2,1,0],[4,0,1,1,0]],"rocks":[],"sleep":[[0,3,2]],"mirrors":[]},{"n":7,"k":1,"lanterns":[[5,3,1,1,0],[2,2,2,1,0],[1,4,2,1,0],[2,1,1,1,0],[2,4,2,1,0],[1,5,3,1,0],[4,5,1,1,0],[4,4,1,1,0],[3,1,2,1,0],[6,1,3,1,0]],"rocks":[[0,0]],"sleep":[],"mirrors":[[6,3,0]]},{"n":7,"k":1,"lanterns":[[5,6,3,1,0],[1,3,3,1,0],[2,0,1,1,0],[3,6,3,1,2],[2,4,3,1,0],[2,3,3,1,1],[6,5,3,1,0],[2,2,1,1,0],[3,4,1,1,0],[6,6,1,1,0],[3,3,3,1,0]],"rocks":[],"sleep":[],"mirrors":[[4,3,0],[1,4,1]]},{"n":7,"k":2,"lanterns":[[1,6,3,1,0],[3,1,2,1,0],[6,1,1,1,0],[3,0,2,1,0],[4,6,2,1,0],[4,3,1,1,0],[4,1,3,1,0],[4,5,3,1,0],[1,4,1,1,0],[3,4,3,1,0],[6,2,1,1,0],[1,1,2,1,0]],"rocks":[],"sleep":[[5,5,2]],"mirrors":[[1,2,1],[5,3,1]]},{"n":7,"k":2,"lanterns":[[3,2,1,1,3],[1,0,3,1,0],[6,6,2,1,0],[6,3,3,1,0],[0,4,2,1,0],[3,4,3,1,3],[4,6,2,1,0],[2,4,3,1,0],[3,0,3,1,0],[3,1,3,1,0],[5,2,3,1,0],[2,0,2,1,0]],"rocks":[[5,0],[2,1]],"sleep":[],"mirrors":[[5,4,1],[4,5,0]]},{"n":7,"k":2,"lanterns":[[2,4,1,1,0],[4,1,3,1,0],[6,1,2,1,0],[3,4,3,1,0],[5,5,2,1,0],[5,3,3,1,0],[1,1,2,2,0],[4,0,1,1,0],[6,6,2,1,0],[3,3,2,2,0],[5,6,2,1,0],[5,4,1,1,0],[2,1,2,1,0]],"rocks":[],"sleep":[[0,4]],"mirrors":[[3,0,0],[5,2,1],[1,0,0]]},{"n":7,"k":3,"lanterns":[[0,2,2,1,0],[1,4,3,1,0],[0,3,2,1,0],[1,2,1,1,0],[0,5,2,1,0],[6,0,1,1,0],[4,0,2,1,0],[6,2,1,1,0],[6,1,2,1,0],[5,6,1,1,0],[6,6,3,1,0],[5,4,3,1,0],[6,5,1,1,0]],"rocks":[[4,6],[2,1]],"sleep":[[2,3,2]],"mirrors":[[5,5,1],[1,5,1]]},{"n":7,"k":1,"lanterns":[[4,2,3,1,0],[5,1,3,1,0],[2,0,3,1,0],[2,2,3,1,0],[6,0,3,1,0],[0,2,2,1,0],[6,4,2,1,0],[6,2,2,1,0],[3,3,3,1,0],[5,4,2,1,4,0],[3,5,2,1,4,0]],"rocks":[[0,0]],"sleep":[],"mirrors":[]},{"n":7,"k":1,"lanterns":[[2,4,3,1,0],[0,1,3,1,0],[0,2,2,1,0],[5,4,2,1,0],[5,5,2,1,2],[0,4,3,1,4,0],[6,5,2,1,0],[2,6,2,1,0],[2,5,3,1,4,0],[6,4,1,1,0],[1,1,2,1,0]],"rocks":[],"sleep":[[5,6]],"mirrors":[]},{"n":7,"k":2,"lanterns":[[0,2,1,1,0],[3,0,3,1,4,1],[4,5,1,1,4,0],[2,6,3,1,4,1],[0,0,1,1,0],[1,2,3,1,0],[6,5,3,1,0],[2,4,2,1,0],[5,4,3,1,0],[1,0,1,1,0],[3,2,1,1,0],[0,1,1,1,4,0]],"rocks":[[1,1],[4,2]],"sleep":[],"mirrors":[]},{"n":7,"k":2,"lanterns":[[6,0,1,1,0],[4,4,1,1,4,0],[2,5,2,1,0],[4,5,1,1,0],[6,1,1,1,3],[3,3,3,1,0],[4,0,2,1,0],[4,3,2,1,4,0],[3,2,1,1,0],[2,0,1,1,0],[0,3,3,1,0],[0,4,3,1,0]],"rocks":[],"sleep":[],"mirrors":[]},{"n":7,"k":1,"lanterns":[[0,3,3,1,0],[2,0,2,1,5],[6,3,1,1,0],[5,6,2,1,0],[5,3,1,1,0],[3,6,2,1,0],[4,2,3,1,0],[4,4,2,1,0],[3,3,3,1,0],[3,2,3,1,0]],"rocks":[[1,4]],"sleep":[],"mirrors":[]},{"n":7,"k":1,"lanterns":[[4,1,3,1,0],[3,2,2,1,0],[3,4,3,1,5],[2,2,2,1,0],[0,5,2,1,0],[0,2,3,1,0],[2,5,1,1,0],[5,3,1,1,0],[3,0,2,1,0],[3,1,1,1,0],[3,3,3,1,0]],"rocks":[],"sleep":[[1,1]],"mirrors":[]},{"n":7,"k":2,"lanterns":[[6,1,1,1,0],[1,3,3,1,0],[4,2,1,1,4,0],[5,5,3,1,0],[1,2,1,1,4,0],[5,1,3,1,0],[3,5,1,1,0],[1,4,1,1,0],[3,1,2,1,5],[6,4,3,1,0],[0,4,2,1,0],[2,5,2,1,0]],"rocks":[],"sleep":[],"mirrors":[]},{"n":7,"k":2,"lanterns":[[0,0,3,1,0],[4,0,1,2,0],[1,2,2,1,0],[0,4,1,1,0],[3,1,3,1,0],[3,3,1,1,0],[4,3,3,1,5],[2,5,2,1,0],[0,5,2,1,0],[0,2,2,1,0],[1,5,1,1,0],[0,1,2,1,5]],"rocks":[[6,4],[3,4]],"sleep":[],"mirrors":[]},{"n":7,"k":2,"lanterns":[[5,5,2,1,0],[6,2,3,1,0],[5,0,2,1,0],[5,1,3,1,0],[3,0,3,1,0],[2,6,2,1,5],[4,1,1,1,0],[0,0,3,1,0],[5,4,1,1,0],[5,2,1,1,0],[1,5,3,1,0],[2,3,3,1,0],[4,4,3,1,0]],"rocks":[],"sleep":[[3,2,2]],"mirrors":[]},{"n":7,"k":3,"lanterns":[[1,2,1,1,0],[0,0,3,1,0],[0,3,2,1,4,0],[2,4,2,1,4,0],[1,3,1,1,0],[6,2,1,1,0],[5,0,2,1,5],[6,1,1,1,0],[4,1,3,1,0],[5,4,2,1,0],[5,6,1,1,0],[6,5,2,1,0],[6,6,3,1,0]],"rocks":[[6,3],[0,6]],"sleep":[],"mirrors":[]},{"n":7,"k":1,"lanterns":[[2,0,2,1,4,0],[2,5,2,1,0],[5,5,1,1,4,0],[4,2,2,1,0],[0,3,3,1,0],[2,1,2,1,0],[4,6,2,1,0],[3,2,1,1,0],[3,5,3,1,0],[5,6,3,1,0],[3,3,2,1,0]],"rocks":[],"sleep":[],"mirrors":[[5,4,0],[1,0,1]]},{"n":7,"k":2,"lanterns":[[2,5,1,1,0],[6,0,3,1,0],[3,6,2,1,0],[4,1,3,1,0],[3,3,3,1,3],[2,0,1,1,0],[4,0,1,1,0],[1,1,3,1,3],[4,6,2,1,0],[4,3,1,1,0],[2,2,3,1,0],[2,1,1,1,0]],"rocks":[],"sleep":[[6,3,2]],"mirrors":[]},{"n":7,"k":2,"lanterns":[[4,4,2,1,1],[3,2,3,1,0],[6,3,1,1,0],[2,0,1,1,0],[2,4,2,1,5],[0,6,1,1,0],[5,3,1,1,0],[4,2,1,1,0],[0,2,3,1,0],[2,1,1,1,0],[1,3,2,1,1],[5,1,3,1,0]],"rocks":[],"sleep":[],"mirrors":[]},{"n":8,"k":1,"lanterns":[[7,5,1,1,0],[6,6,1,1,0],[5,4,1,1,0],[6,1,3,1,0],[7,6,1,1,0],[2,3,1,1,0],[3,6,3,1,0],[1,4,1,1,0],[1,3,1,1,0],[4,1,2,1,0],[4,4,3,1,0],[5,5,3,1,0]],"rocks":[],"sleep":[[5,2]],"mirrors":[[4,6,0],[6,4,1]]},{"n":8,"k":2,"lanterns":[[7,3,3,2,0],[5,2,1,2,0],[1,5,2,1,0],[5,3,3,1,0],[3,4,3,1,0],[7,4,3,1,0],[2,3,3,1,0],[2,1,3,1,4,0],[6,4,2,1,0],[4,5,3,1,0],[7,0,3,1,4,0],[6,2,3,1,0],[4,3,1,1,0]],"rocks":[],"sleep":[],"mirrors":[]},{"n":8,"k":2,"lanterns":[[0,6,2,1,0],[6,3,1,1,0],[3,2,2,1,0],[0,4,3,1,0],[2,5,2,1,0],[7,6,2,1,0],[1,6,2,1,0],[1,4,1,1,0],[5,6,1,1,0],[6,4,2,1,0],[5,7,3,1,0],[3,5,2,1,0],[3,4,3,1,0],[0,3,3,1,0]],"rocks":[],"sleep":[[4,5,2]],"mirrors":[[7,7,0],[6,2,1],[6,7,1]]},{"n":8,"k":2,"lanterns":[[4,6,2,1,0],[6,0,3,1,0],[3,1,2,1,0],[1,1,3,1,0],[2,0,3,1,3],[6,3,1,1,0],[3,2,1,1,0],[2,1,2,1,0],[5,4,2,1,0],[5,1,3,1,0],[3,3,1,1,0],[5,3,1,1,3],[2,4,3,1,5],[7,3,2,1,0]],"rocks":[],"sleep":[],"mirrors":[]},{"n":8,"k":3,"lanterns":[[1,4,1,1,0],[1,6,2,1,2],[2,4,2,1,1],[1,7,2,1,0],[0,6,2,1,0],[0,4,2,1,0],[4,0,3,1,4,0],[7,1,3,1,0],[5,2,1,1,4,0],[4,1,2,1,0],[6,7,2,1,0],[6,6,1,1,0],[4,6,2,1,0],[7,6,2,1,0]],"rocks":[[2,1],[7,7]],"sleep":[],"mirrors":[]},{"n":8,"k":3,"lanterns":[[2,3,2,1,0],[1,5,1,1,0],[0,3,2,1,0],[0,5,2,1,0],[1,7,3,1,0],[1,3,1,1,0],[6,1,3,1,0],[6,3,1,1,0],[7,2,1,1,0],[5,3,1,1,0],[7,3,3,1,0],[4,7,3,1,0],[7,7,3,1,0],[5,7,1,1,0],[5,5,2,1,0]],"rocks":[[5,4],[2,5]],"sleep":[[3,7,2]],"mirrors":[[4,5,1],[2,7,1]]},{"n":8,"k":3,"lanterns":[[2,3,3,1,5],[0,1,2,1,0],[0,0,2,1,0],[0,5,2,1,0],[0,7,1,1,0],[0,3,1,1,0],[4,2,3,1,4,0],[7,3,1,1,4,0],[6,2,3,1,0],[7,0,3,1,0],[5,2,1,1,0],[5,7,1,1,0],[5,5,2,1,0],[6,6,3,1,0],[4,7,1,1,0],[6,7,3,1,0]],"rocks":[[4,3],[4,6],[2,2]],"sleep":[],"mirrors":[[1,5,0],[2,1,1]]}];
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
-const dirsFor = t => DIRS.filter(([dr,dc]) => (t !== 1 || dr === 0) && (t !== 2 || dc === 0));
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]], DIAG = [[1,1],[1,-1],[-1,1],[-1,-1]];
+// 종류: 0 보통 · 1 가로 금띠 · 2 세로 금띠 · 3 심지 · 4 쌍둥이 · 5 별꽃(여덟 방향)
+const dirsFor = t => t === 5 ? DIRS.concat(DIAG) : DIRS.filter(([dr,dc]) => (t !== 1 || dr === 0) && (t !== 2 || dc === 0));
+const bend = (kind, dr, dc) => kind === 0 ? [-dc, -dr] : [dc, dr];   // 거울 '/'(0) · '\\'(1)
 (() => { const s = $('dust'); for (let i = 0; i < 16; i++) { const d = document.createElement('i'); d.style.left = Math.random()*100+'%'; d.style.top = Math.random()*55+'%'; s.appendChild(d); } })();
 
 // ---------- chapters & constellations ----------
@@ -343,21 +381,21 @@ const chOf = idx => Math.floor(idx / 10);
 let AC = null, OUT = null, MUS = null, AMB = null, MASTER = null, VERB = null, NOISE = null;
 function audio() {
   if (!AC) { try {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-    const comp = AC.createDynamicsCompressor(); comp.connect(AC.destination);
+    AC = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+    const comp = AC.createDynamicsCompressor(); comp.threshold.value = -12; comp.knee.value = 14; comp.ratio.value = 3; comp.attack.value = .002; comp.release.value = .12; comp.connect(AC.destination);
     MASTER = AC.createGain(); MASTER.gain.value = soundOn() ? 1 : 0; MASTER.connect(comp);
     OUT = AC.createGain(); OUT.gain.value = 1; OUT.connect(MASTER);
     MUS = AC.createGain(); MUS.gain.value = .0001; MUS.connect(MASTER);
     AMB = AC.createGain(); AMB.gain.value = .0001; AMB.connect(MASTER);
     // 잔향: 소리를 밤공기에 퍼지게 한다 (만든 임펄스, 2.8초)
-    const len = AC.sampleRate * 2.8, ir = AC.createBuffer(2, len, AC.sampleRate);
+    const len = AC.sampleRate * 1.4, ir = AC.createBuffer(2, len, AC.sampleRate);
     for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
-    VERB = AC.createConvolver(); VERB.buffer = ir; const vg = AC.createGain(); vg.gain.value = .55; VERB.connect(vg).connect(MASTER);
+    VERB = AC.createConvolver(); VERB.buffer = ir; const vg = AC.createGain(); vg.gain.value = .32; VERB.connect(vg).connect(MASTER);
     NOISE = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate); const nd = NOISE.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-    setInterval(tickSound, 120);
+    setInterval(tickSound, 120); loadSfx();
   } catch (e) {} }
   if (AC && AC.state === 'suspended') AC.resume();
-  if (AC) setScene(SCENE);
+  if (AC && !bed) setScene(SCENE);      // 처음 한 번만. 장이 바뀔 때는 load()/showTitle()이 setScene을 부른다
 }
 const soundOn = () => save.sound !== false;
 function setSound(on) {
@@ -380,8 +418,31 @@ function noise(t, dur, freq, vol, type = 'bandpass', bus = OUT) {
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   n.connect(f).connect(g).connect(bus); n.start(t, Math.random()); n.stop(t + dur + .05);
 }
+// ---------- 효과음 파일 ----------
+// sfx/pop1.mp3 pop2 pop3(등불 크기별) · final.mp3(마지막 등불) · 변주는 pop1b, pop2b … (있으면 번갈아 씀)
+// 파일이 있으면 그것을, 없으면 아래 합성음을 낸다. 연쇄가 이어질수록 살짝 높아지는 것은 파일에도 재생 속도로 건다.
+// SFX_DIR: 쓸 효과음 묶음 폴더. '' 이면 파일을 쓰지 않고 합성음만 낸다. (불꽃놀이 조각은 sfx/fireworks 에 있으나 등불 느낌이 아니라 꺼 둠)
+const SFX_DIR = 'sfx/hq', SFX = {}, SFX_NAMES = ['pop1','pop2','pop3','final','pop1b','pop2b','pop3b','peel','fuse'];
+function loadSfx() {
+  if (!AC || SFX._loading || !SFX_DIR) return; SFX._loading = true;
+  SFX_NAMES.forEach(n => fetch(`${SFX_DIR}/${n}.mp3`).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => AC.decodeAudioData(b)).then(buf => {
+    // 펑이 실제로 시작되는 지점(최고치의 8%)을 찾아 두고 거기서부터 튼다 → 탭과 소리가 딱 붙는다
+    const d = buf.getChannelData(0); let pk = 0; for (let i = 0; i < d.length; i++) pk = Math.max(pk, Math.abs(d[i]));
+    let i = 0; while (i < d.length && Math.abs(d[i]) < pk * .08) i++;
+    buf._off = Math.max(0, i / buf.sampleRate - .002); SFX[n] = buf;
+  }).catch(() => { SFX[n] = null; }));
+}
+function playBuf(buf, t, vol, rate = 1, bus = OUT, verb = 0) {
+  const src = AC.createBufferSource(), g = AC.createGain(); src.buffer = buf; src.playbackRate.value = rate;
+  g.gain.value = vol; src.connect(g).connect(bus); if (verb) { const vg = AC.createGain(); vg.gain.value = verb; g.connect(vg).connect(VERB); }
+  src.start(t, buf._off || 0); return src;
+}
+const pick = n => { const a = SFX[n], b = SFX[n + 'b']; return b && Math.random() < .5 ? b : a; };
 function pop(size, wave, dt = 0) {
-  if (!AC) return; const t = AC.currentTime + dt, base = (330 - size * 55) * PENT[Math.min(wave, PENT.length - 1)] * KEYS[SCENE];
+  if (!AC) return; const t = AC.currentTime + dt;
+  const buf = pick('pop' + size);
+  if (buf) { const rate = (1 + (PENT[Math.min(wave, PENT.length - 1)] - 1) * .28) * (0.97 + Math.random() * .06); playBuf(buf, t, .75, rate, OUT, .1); return; }
+  const base = (330 - size * 55) * PENT[Math.min(wave, PENT.length - 1)] * KEYS[SCENE];
   const b = tone('triangle', base * 1.6, base, t, .35, .3); tone('sine', base * 3, 0, t, .5, .07); b.connect(VERB);
   noise(t, .09, 2400 + size * 400, .5 + size * .15);           // 종이 찢는 소리
   noise(t + .02, .05, 5200, .18, 'highpass');                    // 파삭
@@ -389,13 +450,14 @@ function pop(size, wave, dt = 0) {
 }
 function resolve() {
   if (!AC) return; const t = AC.currentTime, k = KEYS[SCENE];
+  if (SFX.final) { playBuf(SFX.final, t, 1, 1, OUT, .4); return; }
   [261.6, 329.6, 392, 523.3].forEach((f, i) => { tone('triangle', f * k, 0, t + i * .012, 1.6, .16).connect(VERB); tone('sine', f * 2 * k, 0, t + i * .012, 1.2, .05); });
   [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone('sine', f * k, 0, t + .35 + i * .09, .9, .05).connect(VERB));   // 반짝이 꼬리
   tone('sine', 90, 40, t, .4, .4); noise(t, .25, 1800, .7);
 }
-const soft = () => { if (AC) tone('sine', 700, 420, AC.currentTime, .16, .14); };
+const soft = () => { if (!AC) return; if (SFX.peel) playBuf(SFX.peel, AC.currentTime, .7); else tone('sine', 700, 420, AC.currentTime, .16, .14); };
 const click = () => { if (AC) { tone('sine', 1250, 900, AC.currentTime, .07, .07); } };
-const fizz = () => { if (AC) noise(AC.currentTime, .28, 5000, .25, 'highpass'); };
+const fizz = () => { if (!AC) return; if (SFX.fuse) playBuf(SFX.fuse, AC.currentTime, .5); else noise(AC.currentTime, .28, 5000, .25, 'highpass'); };
 const ting = () => { if (!AC) return; const t = AC.currentTime; tone('sine', 1568, 0, t, 1.4, .12).connect(VERB); tone('sine', 2093, 0, t + .06, 1.2, .08).connect(VERB); };
 const sad = () => { if (AC) { const t = AC.currentTime; tone('triangle', 311, 233, t, .6, .16).connect(VERB); tone('triangle', 233, 196, t + .22, .8, .12).connect(VERB); } };
 const whoosh = () => { if (AC) noise(AC.currentTime, .35, 900, .12, 'lowpass'); };
@@ -415,11 +477,13 @@ const SCN = [
 ];
 let SCENE = 0, nextBeat = 0, beat = 0, nextOwl = 0, nextCrick = 0, nextChime = 0, nextBird = 0, bed = null;
 // 수노(Suno) 곡: music/ch1.mp3 … ch5.mp3 가 있으면 그것을 틀고, 없으면 아래 합성 가락이 대신 흐른다.
-const TRACKS = {}; let curTrack = null, synthOn = true;
+const TRACKS = {}, TRACK_VOL = .8; let curTrack = null, synthOn = true;   // 곡은 -19dB쯤으로 고르게 뽑혀 있어 .8 × MUS(.5)면 팡 아래에 깔린다
 function loadTrack(ch) {
   if (TRACKS[ch] !== undefined) return TRACKS[ch];
-  const a = new Audio(); a.loop = true; a.preload = 'auto'; a.crossOrigin = 'anonymous';
+  const a = new Audio(); a.loop = false; a.preload = 'auto';
   const rec = { el: a, node: null, gain: null, ok: null };
+  // 수노 곡은 끝이 조용히 사라지므로, 다시 시작할 때 2.5초 페이드인으로 이어 붙인다
+  a.addEventListener('ended', () => { if (curTrack !== rec || !AC) return; a.currentTime = 0; rec.gain.gain.setValueAtTime(.0001, AC.currentTime); a.play().then(() => rec.gain.gain.setTargetAtTime(TRACK_VOL, AC.currentTime, .9)).catch(() => {}); });
   a.addEventListener('canplaythrough', () => { if (rec.ok === null) { rec.ok = true; if (SCENE === ch) startTrack(ch); } }, { once: true });
   a.addEventListener('error', () => { rec.ok = false; if (SCENE === ch) synthOn = true; }, { once: true });
   a.src = `music/ch${ch + 1}.mp3`;
@@ -430,9 +494,10 @@ function startTrack(ch) {
   if (!r.node) { r.node = AC.createMediaElementSource(r.el); r.gain = AC.createGain(); r.gain.gain.value = .0001; r.node.connect(r.gain).connect(MUS); }
   if (curTrack && curTrack !== r) { const o = curTrack; o.gain.gain.setTargetAtTime(.0001, AC.currentTime, 1); setTimeout(() => o.el.pause(), 3500); }
   curTrack = r; synthOn = false;
-  r.el.play().then(() => r.gain.gain.setTargetAtTime(1, AC.currentTime, 1.5)).catch(() => { synthOn = true; });
+  r.el.play().then(() => r.gain.gain.setTargetAtTime(TRACK_VOL, AC.currentTime, 1.5)).catch(() => { synthOn = true; });
 }
 function setScene(ch) {
+  if (AC && bed && ch === SCENE) return;   // 같은 장이면 그대로
   SCENE = ch; if (!AC) return;
   const t = AC.currentTime;
   MUS.gain.setTargetAtTime(.5, t, 1.2); AMB.gain.setTargetAtTime(.9, t, 1.5);
@@ -528,11 +593,17 @@ for (let i = 0; i < save.unlocked; i++) save.done[i] = true;
 const persist = () => { try { localStorage.setItem('lanternfall.save', JSON.stringify(save)); } catch (e) {} };
 
 // ---------- mini illustrations & cards ----------
+const TWIN_MARKS = ['달', '별', '꽃', '강'], SEALS = ['#B8322A', '#2B5FA8', '#2E8B57', '#C98A12'];
+// 쌍둥이 문양. 글꼴 크기 설정에 흔들리지 않게 SVG로 그린다: 오방색 둥근 바탕 + 한글 한 글자
+const markSVG = p => { const c = SEALS[p % 4]; return `<svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9.2" fill="${c}"/><circle cx="10" cy="10" r="7.6" fill="none" stroke="#FFF8EC" stroke-width=".9"/><text x="10" y="10.6" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="700" fill="#FFF8EC" font-family="'Nanum Myeongjo','Apple SD Gothic Neo','Noto Serif KR',serif">${TWIN_MARKS[p % TWIN_MARKS.length]}</text></svg>`; };
 function lanHTML(s, opts = {}) {
-  return `<div class="lan s${s}${opts.sleep ? ' sleep' : ''}"><span class="string"></span>${opts.fuse ? '<span class="wick"></span>' : ''}<span class="paper"></span><span class="cap t"></span><span class="cap b"></span>` +
+  return `<div class="lan s${s}${opts.sleep ? ' sleep' : ''}${opts.big ? ' big' : ''}${opts.star ? ' star' : ''}"><span class="string"></span>${opts.fuse ? '<span class="wick"></span>' : ''}${opts.star ? '<span class="halo"></span>' : ''}<span class="paper"></span><span class="cap t"></span><span class="cap b"></span>` +
     (opts.band ? `<span class="band ${opts.band}"></span>` : '') + (opts.veil ? '<span class="veil"></span>' : '') +
-    (opts.sleep ? '<span class="eyes"><i></i><i></i></span><span class="zz">z z</span>' : `<span class="knots">${'<i></i>'.repeat(s)}</span>`) + '</div>';
+    (opts.twin !== undefined ? markSVG(opts.twin) : '') +
+    (opts.sleep ? `<span class="eyes"><i></i><i></i></span><span class="zz">${opts.big ? 'Z Z' : 'z z'}</span>` : `<span class="knots">${'<i></i>'.repeat(s)}</span>`) + '</div>';
 }
+const mirrorHTML = kind => `<div class="mirror ${kind ? 'b' : 'a'}"><i></i></div>`;
+const optsOf = L => ({ band: L.t === 1 ? 'h' : L.t === 2 ? 'v' : null, fuse: L.t === 3, veil: L.l > 1, twin: L.t === 4 ? L.p : undefined, star: L.t === 5 });
 function mini(spec) {
   return '<div class="mini">' + spec.map(x => {
     if (x === '-') return '<div class="mc mray"></div>';
@@ -541,6 +612,14 @@ function mini(spec) {
     if (x === 'R') return '<div class="mc"><div class="rock"></div></div>';
     if (x === 'X') return '<div class="mc"><span class="x">✕</span></div>';
     if (x === 'S') return '<div class="mc">' + lanHTML(2, { sleep: true }) + '</div>';
+    if (x === 'B') return '<div class="mc">' + lanHTML(3, { sleep: true, big: true }) + '</div>';
+    if (x === 'M') return '<div class="mc">' + mirrorHTML(0) + '</div>';
+    if (x === 'm') return '<div class="mc">' + mirrorHTML(1) + '</div>';
+    if (x === '|') return '<div class="mc mray mv"></div>';
+    if (x === 'L') return '<div class="mc mray mL"></div>';
+    if (x === 'W') return '<div class="mc">' + lanHTML(2, { twin: 0 }) + '</div>';
+    if (x === 'K') return '<div class="mc">' + lanHTML(2, { star: true }) + '</div>';
+    if (x === '/') return '<div class="mc mray mdiag"></div>';
     if (/^T\d$/.test(x)) return '<div class="mc tapicons">' + '<i></i>'.repeat(+x[1]) + '</div>';
     const s = +x[1] || 2, o = { band: x[0] === 'H' ? 'h' : x[0] === 'V' ? 'v' : null, fuse: x[0] === 'F', veil: x[0] === 'D' };
     return '<div class="mc">' + lanHTML(s, o) + '</div>';
@@ -559,8 +638,13 @@ const CARDS = {
   dir:     { title: '금띠 등불', kicker: '새로운 등불', art: ['-','H2','-','.','V2'], text: '금띠 방향으로만 불꽃이 나가요. 가로띠는 왼쪽과 오른쪽, 세로띠는 위와 아래로만.' },
   fuse:    { title: '심지 등불', kicker: '새로운 등불', art: ['L1','-','F2'], text: '맞으면 심지에 불이 붙고 한 박자 뒤에 터져요. 불붙은 채 기다리는 동안에는 다른 불꽃을 막아요.' },
   taps3:   { title: '세 번', kicker: '새로운 규칙', art: ['T3'], text: '세 번 칠 수 있어요. 판을 세 무리로 나눠 보세요.' },
+  big:     { title: '큰 잠꾸러기', kicker: '새로운 등불', art: ['L2','>','.','B'], text: '깊이 잠들어서 불꽃이 한 번 닿아도 뒤척이기만 해요. 두 번째로 닿으면 깨어나 실패예요. 한 번은 스쳐도 괜찮아요.' },
+  mirror:  { title: '거울', kicker: '새로운 것', art: ['L2','-','M','|','L1'], text: '불꽃이 거울에 닿으면 직각으로 꺾여 계속 날아가요. 거울 칸도 한 칸으로 세요. 꺾인 뒤에 무엇을 만날지 그려 보세요.' },
+  twin:    { title: '쌍둥이 등불', kicker: '새로운 등불', art: ['W','.','.','W'], text: '같은 글자가 쓰인 등불은 둘이 한 몸이에요. 하나가 터지면 짝도 멀리서 같은 순간에 터져요.' },
+  star:    { title: '별꽃 등불', kicker: '새로운 등불', art: ['/','K','/'], text: '별꽃 등불은 불꽃이 여덟 방향으로 날아가요. 대각선까지 살펴야 해요.' },
+  board8:  { title: '넓은 밤', kicker: '새로운 규칙', art: ['T3'], text: '판이 8×8로 넓어졌어요. 새 등불은 없어요. 지금까지 배운 것을 모두 써 보세요.' },
 };
-const ORDER = ['intro','sleep','preview','rock','taps2','layered','dir','fuse','taps3'];
+const ORDER = ['intro','sleep','preview','rock','taps2','layered','dir','fuse','taps3','big','mirror','twin','star','board8'];
 function featuresOf(idx) {
   const lv = LEVELS[idx], f = new Set(['intro']);
   if (lv.sleep.length) f.add('sleep');
@@ -571,6 +655,11 @@ function featuresOf(idx) {
   if (lv.lanterns.some(x => x[3] > 1)) f.add('layered');
   if (lv.lanterns.some(x => x[4] === 1 || x[4] === 2)) f.add('dir');
   if (lv.lanterns.some(x => x[4] === 3)) f.add('fuse');
+  if (lv.sleep.some(x => x[2] > 1)) f.add('big');
+  if ((lv.mirrors || []).length) f.add('mirror');
+  if (lv.lanterns.some(x => x[4] === 4)) f.add('twin');
+  if (lv.lanterns.some(x => x[4] === 5)) f.add('star');
+  if (lv.n >= 8) f.add('board8');
   return ORDER.filter(k => f.has(k));
 }
 function cardHTML(key) {
@@ -627,9 +716,10 @@ async function load(idx) {
   document.documentElement.dataset.ch = chOf(idx);
   if (AC) setScene(chOf(idx));
   G = { idx, n: lv.n, k: lv.k, used: 0, busy: true, over: false,
-        lan: new Map(lv.lanterns.map(([r,c,s,l,t]) => [r*lv.n+c, { s, l, t }])),
+        lan: new Map(lv.lanterns.map(([r,c,s,l,t,p]) => [r*lv.n+c, { s, l, t, p }])),
         rocks: new Set(lv.rocks.map(([r,c]) => r*lv.n+c)),
-        sleep: new Map(lv.sleep.map(([r,c]) => [r*lv.n+c, {}])) };
+        mirrors: new Map((lv.mirrors || []).map(([r,c,k]) => [r*lv.n+c, { k }])),
+        sleep: new Map(lv.sleep.map(([r,c,hp]) => [r*lv.n+c, { hp: hp || 1 }])) };
   const myG = G;
   board.style.setProperty('--n', lv.n); board.innerHTML = ''; board.className = 'board pre';
   for (let i = 0; i < lv.n*lv.n; i++) {
@@ -639,17 +729,19 @@ async function load(idx) {
     const rise = document.createElement('div'); rise.className = 'rise';
     rise.style.animationDelay = (c * 45 + (lv.n - r) * 35 + Math.random() * 60) + 'ms';
     if (G.rocks.has(i)) rise.innerHTML = '<div class="rock"></div>';
+    else if (G.mirrors.has(i)) { rise.innerHTML = mirrorHTML(G.mirrors.get(i).k); G.mirrors.get(i).el = rise.firstChild; }
     else if (G.sleep.has(i)) {
-      rise.innerHTML = lanHTML(2, { sleep: true }); const d = rise.firstChild;
-      d.style.animationDelay = (-Math.random()*6)+'s'; d.setAttribute('aria-label', '잠든 등불, 깨우면 안 됨');
+      const big = G.sleep.get(i).hp > 1;
+      rise.innerHTML = lanHTML(big ? 3 : 2, { sleep: true, big }); const d = rise.firstChild;
+      d.style.animationDelay = (-Math.random()*6)+'s'; d.setAttribute('aria-label', big ? '큰 잠꾸러기, 두 번 닿으면 깸' : '잠든 등불, 깨우면 안 됨');
       d.addEventListener('pointerdown', () => { audio(); if (!G.busy && !G.over) { d.classList.remove('hit'); void d.offsetWidth; d.classList.add('hit'); soft(); } });
       G.sleep.get(i).el = d;
     } else if (G.lan.has(i)) {
       const L = G.lan.get(i);
-      rise.innerHTML = lanHTML(L.s, { band: L.t === 1 ? 'h' : L.t === 2 ? 'v' : null, fuse: L.t === 3, veil: L.l > 1 });
+      rise.innerHTML = lanHTML(L.s, optsOf(L));
       const d = rise.firstChild; d.style.animationDelay = (-Math.random()*3.4)+'s';
       d.setAttribute('role','button'); d.tabIndex = 0;
-      d.setAttribute('aria-label', `등불, 불꽃 ${L.s}칸` + (L.t === 1 ? ', 가로로만' : L.t === 2 ? ', 세로로만' : L.t === 3 ? ', 심지' : '') + (L.l > 1 ? ', 겉종이' : ''));
+      d.setAttribute('aria-label', `등불, 불꽃 ${L.s}칸` + (L.t === 1 ? ', 가로로만' : L.t === 2 ? ', 세로로만' : L.t === 3 ? ', 심지' : L.t === 4 ? ', 쌍둥이' : L.t === 5 ? ', 여덟 방향' : '') + (L.l > 1 ? ', 겉종이' : ''));
       let held = false, timer = null;
       d.addEventListener('pointerdown', () => { audio(); if (G.busy || G.over) return; held = false; preview(i, true); timer = setTimeout(() => { held = true; }, 380); });
       const release = () => { clearTimeout(timer); preview(i, false); };
@@ -676,32 +768,47 @@ async function load(idx) {
 }
 function renderTaps() { const t = $('taps'); t.innerHTML = ''; for (let i = 0; i < G.k; i++) { const d = document.createElement('i'); if (i < G.used) d.classList.add('used'); t.appendChild(d); } }
 function center(i) { const n = G.n, cs = board.clientWidth / n; return { x: (i % n) * cs + cs/2, y: Math.floor(i/n) * cs + cs/2, cs }; }
+// 불꽃 하나의 길. path: 지나간 칸(거울 칸 포함). sim.py의 trace와 같아야 한다.
 function trace(p, dr, dc, s) {
-  const r0 = Math.floor(p/G.n), c0 = p%G.n; let reach = 0;
+  let r = Math.floor(p/G.n), c = p%G.n; const path = [];
   for (let d = 1; d <= s; d++) {
-    const r = r0+dr*d, c = c0+dc*d;
+    r += dr; c += dc;
     if (r<0||r>=G.n||c<0||c>=G.n) break;
     const q = r*G.n+c; if (G.rocks.has(q)) break;
-    reach = d;
-    if (G.sleep.has(q)) return { reach, hit: q, sleeper: true };
-    if (G.lan.has(q)) return { reach, hit: q, sleeper: false };
+    path.push(q);
+    if (G.mirrors.has(q)) { [dr, dc] = bend(G.mirrors.get(q).k, dr, dc); continue; }
+    if (G.sleep.has(q)) return { path, reach: path.length, hit: q, sleeper: true };
+    if (G.lan.has(q)) return { path, reach: path.length, hit: q, sleeper: false };
   }
-  return { reach, hit: null, sleeper: false };
+  return { path, reach: path.length, hit: null, sleeper: false };
+}
+// 길을 꺾이는 점 기준으로 선분으로 나눈다: [{x,y}, ...] (판 안 픽셀, 첫 점은 출발 등불)
+function segments(p, path) {
+  const pts = [center(p)]; let prev = p;
+  for (const q of path) { pts.push(center(q)); prev = q; }
+  return pts;
 }
 let rays = [];
 function preview(i, on) {
   rays.forEach(r => r.remove()); rays = [];
   board.querySelectorAll('.target').forEach(e => e.classList.remove('target'));
   if (!on || !G.lan.has(i)) return;
-  const L = G.lan.get(i), {x,y,cs} = center(i), yc = y - cs * .07;
+  const L = G.lan.get(i), cs = center(i).cs;
   for (const [dr,dc] of dirsFor(L.t)) {
     const t = trace(i, dr, dc, L.s); if (!t.reach) continue;
-    const ray = document.createElement('div'); ray.className = 'ray';
-    const len = cs * t.reach - (t.hit !== null ? cs*0.3 : 0) - cs*0.25;
-    ray.style.left = (x + dc*cs*0.25)+'px'; ray.style.top = (yc + dr*cs*0.25)+'px'; ray.style.width = Math.max(0,len)+'px';
-    ray.style.transform = `rotate(${Math.atan2(dr, dc)}rad)`;
-    board.appendChild(ray); rays.push(ray); requestAnimationFrame(() => ray.classList.add('show'));
+    const pts = segments(i, t.path);
+    for (let k = 0; k + 1 < pts.length; k++) {
+      const a = pts[k], b = pts[k+1], ddx = b.x - a.x, ddy = b.y - a.y, full = Math.hypot(ddx, ddy);
+      const ux = ddx / full, uy = ddy / full;
+      const head = k === 0 ? cs * .25 : 0, tail = (k + 2 === pts.length && t.hit !== null) ? cs * .3 : 0;
+      const len = full - head - tail; if (len <= 0) continue;
+      const ray = document.createElement('div'); ray.className = 'ray';
+      ray.style.left = (a.x + ux * head) + 'px'; ray.style.top = (a.y - cs * .07 + uy * head) + 'px'; ray.style.width = len + 'px';
+      ray.style.transform = `rotate(${Math.atan2(uy, ux)}rad)`;
+      board.appendChild(ray); rays.push(ray); requestAnimationFrame(() => ray.classList.add('show'));
+    }
     if (t.hit !== null) (t.sleeper ? G.sleep.get(t.hit).el : G.lan.get(t.hit).el).classList.add('target');
+    t.path.forEach(q => { if (G.mirrors.has(q)) G.mirrors.get(q).el.classList.add('target'); });
   }
 }
 function paperBurst(i, s, big = false) {
@@ -733,13 +840,22 @@ function goldDust(cnt) {
   }
 }
 const DUR = 110;
-function leaf(from, dr, dc, reach) {
-  const {x,y,cs} = center(from), yc = y - cs * .07;
+function leaf(from, path) {
+  const {x, y, cs} = center(from), yc = y - cs * .07, reach = path.length;
   const p = document.createElement('div'); p.className = 'leaf';
-  p.style.left = x+'px'; p.style.top = yc+'px'; p.style.transitionDuration = (DUR*reach)+'ms'; p.style.transform = 'rotate(0deg)';
-  board.appendChild(p);
-  requestAnimationFrame(() => requestAnimationFrame(() => { p.style.transform = `translate(${dc*cs*reach}px, ${dr*cs*reach}px) rotate(${220*reach}deg)`; }));
+  p.style.left = x+'px'; p.style.top = yc+'px'; board.appendChild(p);
+  const pts = segments(from, path);
+  const frames = pts.map((q, k) => ({ transform: `translate(${q.x - x}px, ${q.y - y}px) rotate(${220 * k}deg)`, offset: k / (pts.length - 1) }));
+  p.animate(frames, { duration: DUR * reach, easing: 'linear', fill: 'forwards' });
+  path.forEach((q, k) => { if (G.mirrors.has(q)) setTimeout(() => { const m = G.mirrors.get(q).el; m.classList.remove('flash'); void m.offsetWidth; m.classList.add('flash'); ting2(); }, DUR * (k + 1)); });
   setTimeout(() => { p.style.opacity = '0'; }, DUR*reach); setTimeout(() => p.remove(), DUR*reach + 200);
+}
+const ting2 = () => { if (AC) tone('sine', 2400, 1900, AC.currentTime, .12, .05); };
+// 큰 잠꾸러기가 뒤척임: 한 번 견딘 뒤 보통 잠든 등불이 된다
+function stir(q) {
+  const S = G.sleep.get(q), el = S.el; el.classList.remove('big'); el.classList.add('stir');
+  el.querySelector('.zz').textContent = '…'; setTimeout(() => { el.querySelector('.zz').textContent = 'z z'; el.classList.remove('stir'); }, 900);
+  if (AC) { const t = AC.currentTime; tone('sine', 220, 180, t, .35, .12); noise(t, .2, 600, .15, 'lowpass'); } buzz(25);
 }
 function peel(pos, T) {
   T.el.classList.add('cracked'); T.el.classList.remove('hit'); void T.el.offsetWidth; T.el.classList.add('hit'); soft(); paperBurst(pos, 1);
@@ -764,15 +880,17 @@ async function tap(i) {
   if (G.lan.size === 0) return finish(true);
   if (G.used >= G.k) return finish(false);
 }
+const twinOf = p => { const L = G.lan.get(p); if (!L || L.t !== 4) return null; for (const [q, M] of G.lan) if (q !== p && M.t === 4 && M.p === L.p) return q; return null; };
 async function chain(start) {
-  const sched = new Map([[0, [start]]]), done = new Set([start]);
+  const first = [start]; if (G.lan.get(start).t === 4) { const m = twinOf(start); if (m !== null) first.push(m); }
+  const sched = new Map([[0, first]]), done = new Set(first);
   let w = 0, total = 0, woke = false;
   while (!woke && [...sched.keys()].some(k => k >= w)) {
     const wave = (sched.get(w) || []).filter(p => G.lan.has(p)); sched.delete(w);
     if (!wave.length) { await sleep(DUR * 2 + 60); w++; continue; }
     let finale = G.lan.size === wave.length;
     if (finale) { const keep = wave.map(p => [p, G.lan.get(p)]); wave.forEach(p => G.lan.delete(p));
-      finale = !keep.some(([p, L]) => dirsFor(L.t).some(([dr,dc]) => trace(p, dr, dc, L.s).sleeper));
+      finale = !keep.some(([p, L]) => dirsFor(L.t).some(([dr,dc]) => { const t = trace(p, dr, dc, L.s); return t.sleeper && G.sleep.get(t.hit).hp <= 1; }));
       keep.forEach(([p, L]) => G.lan.set(p, L)); }
     if (finale) await sleep(220);
     total += wave.length;
@@ -789,10 +907,12 @@ async function chain(start) {
       setTimeout(() => L.el.remove(), finale ? 520 : 170);
       for (const t of tr) {
         if (!t.reach) continue;
-        leaf(p, t.dr, t.dc, t.reach); maxReach = Math.max(maxReach, t.reach);
+        leaf(p, t.path); maxReach = Math.max(maxReach, t.reach);
         if (t.hit === null) continue;
         if (t.sleeper) {
-          woke = true; const el = G.sleep.get(t.hit).el;
+          const S = G.sleep.get(t.hit); S.hp--;
+          if (S.hp > 0) { const q = t.hit; setTimeout(() => stir(q), DUR * t.reach); continue; }
+          woke = true; const el = S.el;
           setTimeout(() => { el.querySelector('.zz').textContent = '!'; el.classList.add('woke'); yawn(); buzz(80); }, DUR * t.reach);
           continue;
         }
@@ -803,6 +923,8 @@ async function chain(start) {
             done.add(t.hit); const dw = w + (T.t === 3 ? 2 : 1);
             if (!sched.has(dw)) sched.set(dw, []); sched.get(dw).push(t.hit);
             if (T.t === 3) setTimeout(() => { T.el.classList.add('lit'); fizz(); }, DUR * t.reach);
+            if (T.t === 4) { const m = twinOf(t.hit); if (m !== null && !done.has(m)) { done.add(m); G.lan.get(m).l = 0; sched.get(dw).push(m);
+              const me = G.lan.get(m).el, te = T.el; setTimeout(() => { te.classList.add('call'); me.classList.add('call'); }, DUR * t.reach); } }
           }
         } else { const q = t.hit; setTimeout(() => peel(q, T), DUR * t.reach); }
       }
@@ -851,7 +973,7 @@ async function finish(won, woke = false) {
     else rain();
     const last = idx + 1 >= LEVELS.length;
     $('ovT').textContent = chapterDone && first ? CH[ch].sky : ['밤이 환해졌어요', '다 피었어요', '한 송이도 남김없이', '고요해졌어요'][idx % 4];
-    $('ovP').textContent = chapterDone && first ? `${CH[ch].name}의 별자리가 완성됐어요.` : last ? '준비된 스무 판을 전부 끝냈어요.' : '다음 밤으로.';
+    $('ovP').textContent = chapterDone && first ? `${CH[ch].name}의 별자리가 완성됐어요.` : last ? `준비된 ${LEVELS.length}판을 전부 끝냈어요.` : '다음 밤으로.';
     $('ovA').textContent = last ? '처음부터' : '다음';
     $('ovA').onclick = () => { ov.classList.remove('show'); load(last ? 0 : idx + 1); };
     $('ovB').textContent = '이 판 다시'; $('ovB').onclick = () => { ov.classList.remove('show'); load(idx); };
@@ -888,7 +1010,6 @@ function spawnFloater(first) {
   f.style.setProperty('--sc', sc); f.style.setProperty('--dur', dur + 's');
   f.style.animationDelay = first ? (-Math.random() * dur) + 's' : '0s';
   f.style.zIndex = Math.round(depth * 10); f.style.opacity = (.45 + depth * .55).toFixed(2);
-  if (depth < .3) f.style.filter = 'blur(1px)';
   const opened = [0,1,2,3,4].filter(chUnlocked), ch = opened[Math.floor(Math.random() * opened.length)] || 0;
   tint(f, Math.random() < .5 ? 0 : ch);
   f.innerHTML = lanHTML([1,2,2,3][Math.floor(Math.random() * 4)]);

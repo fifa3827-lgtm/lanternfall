@@ -158,6 +158,28 @@
 
 검수: 소리가 갑자기 커지는 곳이 없는가, 끝이 뚝 끊기지 않는가, 40초쯤 들었을 때 게임 화면과 어울리는가.
 
+**받음(시험판 9)**: ch1~ch5 모두 들어옴. 길이 2:00~3:38, 평균 -19dB로 고르고 끝은 조용히 사라진다. 끝난 뒤 다시 시작할 때 코드가 2.5초 페이드인을 건다(`game.js` `loadTrack`). 게임 안 세기는 `TRACK_VOL`(.8) × 배경음 버스(.5). 합성 가락은 파일이 없을 때만 나온다.
+
+## 효과음 (파일)
+
+`sfx/` 에 아래 이름으로 넣으면 게임이 그것을 쓰고, 없는 것은 합성음이 대신 난다. 곡과 달리 **수노는 효과음에 약하다** — 짧은 소리는 일레븐랩스 Sound Effects(무료 한도 있음)나 프리사운드(freesound.org, 검색어 `paper pop`, `paper lantern burst`, `paper bag pop`)가 낫다. 어디서 받든 상관없고, 받은 원본을 그대로 주면 Claude가 `tools/sfx.py`로 앞 무음을 자르고 크기를 맞춰 넣는다.
+
+| 파일 | 소리 | 프롬프트 (일레븐랩스 등에 그대로) |
+| --- | --- | --- |
+| pop1.mp3 | 작은 등불 팡 (1칸). 가볍고 높음, 0.3초 | `small paper lantern bursting, light dry paper pop with a soft airy puff, short, close, no reverb, no music` |
+| pop2.mp3 | 보통 등불 팡 (2칸). 0.4초 | `paper lantern bursting open, crisp paper pop with a gentle warm thump and a brief flutter of paper scraps, short, no music` |
+| pop3.mp3 | 큰 등불 팡 (3칸). 낮고 묵직, 0.5초 | `large paper lantern bursting, deep soft thump with a satisfying paper rip and scraps fluttering, short, punchy, no music` |
+| final.mp3 | 마지막 등불. 크게 터지며 반짝이 꼬리, 2초 | `big paper lantern burst followed by a shimmering magical sparkle tail and soft chime, celebratory, warm, 2 seconds, no music` |
+| peel.mp3 | 겉종이 벗겨짐 | `thin paper sheet being peeled off softly, light rustle, very short` |
+| fuse.mp3 | 심지에 불붙음 | `small fuse igniting with a soft hiss and crackle, short` |
+| pop1b · pop2b · pop3b | (선택) 같은 소리의 변주. 있으면 번갈아 나서 덜 반복적 | 위와 같은 프롬프트로 한 번 더 |
+
+검수: 팡이 파일 맨 앞에 붙어 있는가(앞 무음은 도구가 자름), 잔향이 길지 않은가(잔향은 코드가 얹음), 세 크기가 확실히 낮아지는가. 연쇄가 이어질수록 살짝 높아지는 것은 코드가 재생 속도로 건다.
+
+**쓰는 것(시험판 9)**: 「HQ fire work sound, 고음질 폭죽소리.mp3」(42초, 7초 뒤 펑 여덟 번) → `sfx/hq/`. 펑의 머리만 0.25~0.4초로 짧게 잘라 타닥거리는 꼬리를 버리고(꼬리는 마지막 등불에만), 150Hz 아래 울림을 걸러낸 뒤 큰 등불에는 64Hz 쿵을 더했다. 결과: 작은 750Hz·보통 611Hz·큰 411Hz, -20dB까지 170~330ms. `game.js` `SFX_DIR = 'sfx/hq'`. 자른 시각은 `tools/sfx_cut.py`의 `hq` 묶음. 처음엔 작고 늦게 들린다고 했다 → 세기를 .72로 올리고, 읽어 들일 때 최고치의 8% 지점(실제 펑 시작)을 찾아 거기서부터 재생해 mp3 앞의 빈 구간을 없앴다(`buf._off`). AudioContext는 `latencyHint: 'interactive'`. 검사: 탭 뒤 첫 소리 22ms.
+
+**꺼 둔 것**: 불꽃놀이 조각은 웅웅하고 지저분해서 등불 터지는 느낌이 안 났다. `sfx/fireworks/`에 남겨 두고 `game.js`의 `SFX_DIR`을 비워 합성음으로 돌렸다. 다음 파일은 **가깝고 마른 소리**여야 한다: 풍선 터짐(balloon pop), 종이봉투 터짐(paper bag pop), 뽁뽁이(bubble wrap pop) 계열. 잔향·거리감이 있는 야외 녹음은 피한다. 아래는 그때의 기록. 「불꽃놀이 소리 ASMR.mp3」(21.5초) 한 파일로 전부 만들었다. 14.40·16.19·18.48·19.80초의 또렷한 펑 네 번을 등불 크기별로 나누고(낮은 896Hz 펑 → 큰 등불), 음높이를 살짝 옮겨 차이를 벌리고 큰 등불에는 62Hz 쿵을 더했다. 마지막 등불은 18.48초부터 2.9초(펑 두 번과 잔불), 심지는 앞부분 타닥거림 한 조각. 자르는 시각과 조건은 `tools/sfx_cut.py`에 그대로 있다(다른 녹음을 받으면 시각만 바꿔 다시 돌린다). 겉종이(peel)는 파일 없이 합성음 그대로. 게임 안 세기는 팡 .42, 마지막 .75(`game.js` `pop`/`resolve`).
+
 ## 처리 과정 (Claude)
 
 1. 받은 그림을 작게 줄여 눈으로 먼저 본다. 검수 항목에 걸리면 다시 뽑아 달라고 한다.
