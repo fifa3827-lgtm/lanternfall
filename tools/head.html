@@ -198,7 +198,7 @@
           -webkit-mask: var(--img-glow) center / 100% 100% no-repeat; mask: var(--img-glow) center / 100% 100% no-repeat; animation: glow 1.2s ease-out forwards; }
   .glow.big { animation-duration: 2s; }
   @keyframes glow { 0% { transform: translate(-50%,-50%) scale(.5); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1.6); opacity: 0; } }
-  .scrap { position: absolute; pointer-events: none; z-index: 6; border-radius: 1px; animation: scrap var(--d) cubic-bezier(.2,.6,.4,1) forwards; }
+  .scrap { position: absolute; pointer-events: none; z-index: 6; background: center / contain no-repeat; animation: scrap var(--d) cubic-bezier(.2,.6,.4,1) forwards; }
   @keyframes scrap {
     0%   { transform: translate(0,0) rotate(0) rotateX(0); opacity: 1; }
     22%  { transform: translate(var(--x0), var(--y0)) rotate(var(--r0)) rotateX(40deg); opacity: 1; }

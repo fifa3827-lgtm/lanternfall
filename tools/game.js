@@ -642,8 +642,8 @@ function paperBurst(i, s, big = false) {
   const cnt = (8 + s * 2) * (big ? 2.5 : 1);
   for (let k = 0; k < cnt; k++) {
     const e = document.createElement('div'); e.className = 'scrap';
-    const w = 5 + Math.random() * 7, h = 6 + Math.random() * 9;
-    e.style.width = w+'px'; e.style.height = h+'px'; e.style.left = (x - w/2)+'px'; e.style.top = (yc - h/2)+'px'; e.style.background = cols[k % cols.length];
+    const w = (9 + Math.random() * 9) * (big ? 1.3 : 1), h = w;                       // 제미나이 색종이 조각(assets.md 10번)
+    e.style.width = w+'px'; e.style.height = h+'px'; e.style.left = (x - w/2)+'px'; e.style.top = (yc - h/2)+'px'; e.style.backgroundImage = `var(--img-cf${(k * 5 + (s | 0)) % 12})`;
     const a = Math.random() * Math.PI * 2, d = cs * (0.35 + Math.random() * 0.4 * s) * (big ? 1.8 : 1);
     e.style.setProperty('--x0', Math.cos(a)*d+'px'); e.style.setProperty('--y0', (Math.sin(a)*d - cs*0.2)+'px');
     e.style.setProperty('--sw', (12 + Math.random()*16) * (Math.random()<.5?-1:1) + 'px'); e.style.setProperty('--fall', (cs * (1 + Math.random()*1.2) * (big ? 1.6 : 1))+'px');
@@ -878,8 +878,8 @@ function floaterPop(f, sc) {
   TITLE.appendChild(g); setTimeout(() => g.remove(), 1250);
   for (let k = 0; k < 14; k++) {
     const e = document.createElement('div'); e.className = 'scrap tscrap';
-    const w = 4 + Math.random() * 6 * sc, h = 5 + Math.random() * 8 * sc;
-    e.style.width = w + 'px'; e.style.height = h + 'px'; e.style.left = (x - w/2) + 'px'; e.style.top = (y - h/2) + 'px'; e.style.background = cols[k % 4];
+    const w = (7 + Math.random() * 8) * sc, h = w;
+    e.style.width = w + 'px'; e.style.height = h + 'px'; e.style.left = (x - w/2) + 'px'; e.style.top = (y - h/2) + 'px'; e.style.backgroundImage = `var(--img-cf${k % 12})`;
     const a = Math.random() * Math.PI * 2, d = cs * (.4 + Math.random() * .7);
     e.style.setProperty('--x0', Math.cos(a)*d+'px'); e.style.setProperty('--y0', (Math.sin(a)*d - cs*.2)+'px');
     e.style.setProperty('--sw', (10 + Math.random()*14) * (Math.random()<.5?-1:1) + 'px'); e.style.setProperty('--fall', cs * (1.2 + Math.random()) + 'px');
