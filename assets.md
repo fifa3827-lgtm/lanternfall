@@ -142,6 +142,22 @@
 
 **시험판 7 현황**: 바위와 원경 네 장을 넣었다. 제미나이 그림 오른쪽 아래에 반짝이 표시(✦)가 찍혀 나오므로 원경은 오른쪽 170px를 잘라 버린다(가로로 긴 그림이라 잘려도 티가 안 난다). 원경은 어두운 정도를 투명도로 바꾼 흰 실루엣으로 저장하고(`art/bg1~4.webp`), 게임에서는 가림막(mask)으로 써서 먹빛(#08080D)을 칠한다. 뒤에 장 색의 옅은 불빛(haze)을 깔아 실루엣이 보이게 한다. 폰에서는 가로 760px 크기로 가운데만 보인다. 판 바로 아래(강물 윗선)에 놓이고, 인트로 화면에는 1장 마을이 깔린다. 바위는 등불과 같은 방식으로 배경을 지우고 가장 큰 덩어리만 남긴다.
 
+## 음악 (수노)
+
+`music/ch1.mp3` … `music/ch5.mp3` 로 저장소에 올리면 게임이 그 장에서 자동으로 튼다(파일이 없으면 합성 가락이 대신 흐른다). 이진 파일이므로 사용자가 깃허브 Upload 화면에 끌어다 놓는다.
+
+공통 조건: **가사 없음(instrumental)**, 1분 30초~2분, 시작과 끝이 조용해서 반복해도 티가 안 남, 타악기 세지 않게, 게임 효과음(팡 소리)이 얹히므로 고음 영역을 비워 둘 것. 장 순서대로 으뜸음이 도→레→낮은 라→파→미 로 바뀌면 판을 넘길 때 자연스럽다(수노가 지켜 주지 않아도 됨).
+
+| 파일 | 장 | 프롬프트 (그대로 복사) |
+| --- | --- | --- |
+| ch1.mp3 | 첫 밤 | `Gentle Korean night ambient, solo gayageum plucks over a soft warm pad, slow, sparse, lantern festival by a river, calm and hopeful, instrumental, no drums, seamless loop, quiet intro and outro` |
+| ch2.mp3 | 바람 부는 밤 | `Airy Korean ambient, daegeum bamboo flute long breathy notes with light gayageum, wind over a river at night, floating, slightly brighter than before, instrumental, no drums, seamless loop` |
+| ch3.mp3 | 깊은 밤 | `Deep quiet Korean temple night ambient, low sustained pad, distant wind chime, very sparse gayageum in a low register, mysterious and still, instrumental, no drums, seamless loop` |
+| ch4.mp3 | 축제의 밤 | `Warm festive Korean night ambient, gayageum and haegeum melody, soft distant buk drum heartbeat, lantern market glow, gentle joy without being loud, instrumental, seamless loop` |
+| ch5.mp3 | 새벽 | `Korean dawn ambient, piri or daegeum floating over a soft pad, first birds, pale pink sky, tender and resolving, instrumental, no drums, seamless loop, ends softly` |
+
+검수: 소리가 갑자기 커지는 곳이 없는가, 끝이 뚝 끊기지 않는가, 40초쯤 들었을 때 게임 화면과 어울리는가.
+
 ## 처리 과정 (Claude)
 
 1. 받은 그림을 작게 줄여 눈으로 먼저 본다. 검수 항목에 걸리면 다시 뽑아 달라고 한다.

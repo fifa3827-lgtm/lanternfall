@@ -27,41 +27,186 @@ const CH = [
 const chOf = idx => Math.floor(idx / 10);
 
 // ---------- sound ----------
-let AC = null, OUT = null;
+// 버스: 효과음(OUT) · 배경음(MUS) · 밤소리(AMB) → 마스터 → 압축기. 소리는 기본 켜짐, 첫 터치에 시작한다(브라우저 규칙).
+let AC = null, OUT = null, MUS = null, AMB = null, MASTER = null, VERB = null, NOISE = null;
 function audio() {
-  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); OUT = AC.createDynamicsCompressor(); OUT.connect(AC.destination); } catch (e) {} }
+  if (!AC) { try {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = AC.createDynamicsCompressor(); comp.connect(AC.destination);
+    MASTER = AC.createGain(); MASTER.gain.value = soundOn() ? 1 : 0; MASTER.connect(comp);
+    OUT = AC.createGain(); OUT.gain.value = 1; OUT.connect(MASTER);
+    MUS = AC.createGain(); MUS.gain.value = .0001; MUS.connect(MASTER);
+    AMB = AC.createGain(); AMB.gain.value = .0001; AMB.connect(MASTER);
+    // 잔향: 소리를 밤공기에 퍼지게 한다 (만든 임펄스, 2.8초)
+    const len = AC.sampleRate * 2.8, ir = AC.createBuffer(2, len, AC.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+    VERB = AC.createConvolver(); VERB.buffer = ir; const vg = AC.createGain(); vg.gain.value = .55; VERB.connect(vg).connect(MASTER);
+    NOISE = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate); const nd = NOISE.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    setInterval(tickSound, 120);
+  } catch (e) {} }
   if (AC && AC.state === 'suspended') AC.resume();
+  if (AC) setScene(SCENE);
 }
+const soundOn = () => save.sound !== false;
+function setSound(on) {
+  save.sound = on; persist(); audio();
+  if (MASTER) MASTER.gain.setTargetAtTime(on ? 1 : 0, AC.currentTime, .15);
+  document.querySelectorAll('.snd').forEach(b => { b.classList.toggle('off', !on); b.setAttribute('aria-label', on ? '소리 끄기' : '소리 켜기'); });
+}
+document.addEventListener('pointerdown', () => audio(), { capture: true });
 const PENT = [1, 9/8, 5/4, 3/2, 5/3, 2, 9/4, 5/2, 3, 10/3, 4];
-function tone(type, f0, f1, t, dur, vol) {
+function tone(type, f0, f1, t, dur, vol, bus = OUT, pan = 0) {
   const o = AC.createOscillator(), g = AC.createGain(); o.type = type;
   o.frequency.setValueAtTime(f0, t); if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur * .3);
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g).connect(OUT); o.start(t); o.stop(t + dur + .05);
+  let n = o.connect(g); if (pan && AC.createStereoPanner) { const p = AC.createStereoPanner(); p.pan.value = pan; n = n.connect(p); }
+  n.connect(bus); o.start(t); o.stop(t + dur + .05); return n;
 }
-function noise(t, dur, freq, vol, type = 'bandpass') {
-  const len = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+function noise(t, dur, freq, vol, type = 'bandpass', bus = OUT) {
   const n = AC.createBufferSource(), g = AC.createGain(), f = AC.createBiquadFilter();
-  n.buffer = buf; f.type = type; f.frequency.value = freq; f.Q.value = .7; g.gain.value = vol; n.connect(f).connect(g).connect(OUT); n.start(t);
+  n.buffer = NOISE; f.type = type; f.frequency.value = freq; f.Q.value = .7;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  n.connect(f).connect(g).connect(bus); n.start(t, Math.random()); n.stop(t + dur + .05);
 }
 function pop(size, wave, dt = 0) {
-  if (!AC) return; const t = AC.currentTime + dt, base = (330 - size * 55) * PENT[Math.min(wave, PENT.length - 1)];
-  tone('triangle', base * 1.6, base, t, .35, .3); tone('sine', base * 3, 0, t, .5, .07);
-  noise(t, .09, 2400 + size * 400, .5 + size * .15);
-  if (size >= 3) tone('sine', 120, 45, t, .22, .35);
+  if (!AC) return; const t = AC.currentTime + dt, base = (330 - size * 55) * PENT[Math.min(wave, PENT.length - 1)] * KEYS[SCENE];
+  const b = tone('triangle', base * 1.6, base, t, .35, .3); tone('sine', base * 3, 0, t, .5, .07); b.connect(VERB);
+  noise(t, .09, 2400 + size * 400, .5 + size * .15);           // 종이 찢는 소리
+  noise(t + .02, .05, 5200, .18, 'highpass');                    // 파삭
+  if (size >= 3) tone('sine', 120, 45, t, .22, .35);             // 큰 등불은 쿵
 }
 function resolve() {
-  if (!AC) return; const t = AC.currentTime;
-  [261.6, 329.6, 392, 523.3].forEach((f, i) => { tone('triangle', f, 0, t + i * .012, 1.6, .16); tone('sine', f * 2, 0, t + i * .012, 1.2, .05); });
+  if (!AC) return; const t = AC.currentTime, k = KEYS[SCENE];
+  [261.6, 329.6, 392, 523.3].forEach((f, i) => { tone('triangle', f * k, 0, t + i * .012, 1.6, .16).connect(VERB); tone('sine', f * 2 * k, 0, t + i * .012, 1.2, .05); });
+  [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone('sine', f * k, 0, t + .35 + i * .09, .9, .05).connect(VERB));   // 반짝이 꼬리
   tone('sine', 90, 40, t, .4, .4); noise(t, .25, 1800, .7);
 }
 const soft = () => { if (AC) tone('sine', 700, 420, AC.currentTime, .16, .14); };
+const click = () => { if (AC) { tone('sine', 1250, 900, AC.currentTime, .07, .07); } };
 const fizz = () => { if (AC) noise(AC.currentTime, .28, 5000, .25, 'highpass'); };
-const ting = () => { if (!AC) return; const t = AC.currentTime; tone('sine', 1568, 0, t, 1.4, .12); tone('sine', 2093, 0, t + .06, 1.2, .08); };
-const sad = () => { if (AC) tone('triangle', 311, 233, AC.currentTime, .6, .16); };
+const ting = () => { if (!AC) return; const t = AC.currentTime; tone('sine', 1568, 0, t, 1.4, .12).connect(VERB); tone('sine', 2093, 0, t + .06, 1.2, .08).connect(VERB); };
+const sad = () => { if (AC) { const t = AC.currentTime; tone('triangle', 311, 233, t, .6, .16).connect(VERB); tone('triangle', 233, 196, t + .22, .8, .12).connect(VERB); } };
+const whoosh = () => { if (AC) noise(AC.currentTime, .35, 900, .12, 'lowpass'); };
 const yawn = () => { if (!AC) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(1400, t + .15); o.frequency.exponentialRampToValueAtTime(560, t + .65); g.gain.setValueAtTime(.22, t); g.gain.linearRampToValueAtTime(.0001, t + .7); o.connect(g).connect(OUT); o.start(t); o.stop(t + .75); };
 const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+// ---------- 배경음과 밤소리 ----------
+// 장마다 으뜸음, 빠르기, 밤소리가 다르다. 전부 합성음이라 파일이 없다.
+const KEYS = [1, 1.122, .891, 1.335, 1.189];            // 1장 기준(도) · 2장 레 · 3장 라(낮게) · 4장 파 · 5장 미
+const TEMPO = [1.05, .95, 1.25, .8, 1.1];               // 한 박(초)
+const SCN = [
+  { crick: 1, owl: 1, water: 1 },                       // 1장 첫 밤: 풀벌레, 소쩍새, 물결
+  { crick: .6, owl: .6, water: 1, wind: 1 },            // 2장 바람 부는 밤: 강바람
+  { crick: .5, owl: 1, water: .6, chime: 1 },           // 3장 깊은 밤: 산사 풍경 소리
+  { crick: .4, owl: .2, water: .6, drum: 1 },           // 4장 축제의 밤: 먼 북소리
+  { crick: .2, owl: 0, water: .8, bird: 1 },            // 5장 새벽: 새벽 새
+];
+let SCENE = 0, nextBeat = 0, beat = 0, nextOwl = 0, nextCrick = 0, nextChime = 0, nextBird = 0, bed = null;
+// 수노(Suno) 곡: music/ch1.mp3 … ch5.mp3 가 있으면 그것을 틀고, 없으면 아래 합성 가락이 대신 흐른다.
+const TRACKS = {}; let curTrack = null, synthOn = true;
+function loadTrack(ch) {
+  if (TRACKS[ch] !== undefined) return TRACKS[ch];
+  const a = new Audio(); a.loop = true; a.preload = 'auto'; a.crossOrigin = 'anonymous';
+  const rec = { el: a, node: null, gain: null, ok: null };
+  a.addEventListener('canplaythrough', () => { if (rec.ok === null) { rec.ok = true; if (SCENE === ch) startTrack(ch); } }, { once: true });
+  a.addEventListener('error', () => { rec.ok = false; if (SCENE === ch) synthOn = true; }, { once: true });
+  a.src = `music/ch${ch + 1}.mp3`;
+  return TRACKS[ch] = rec;
+}
+function startTrack(ch) {
+  const r = TRACKS[ch]; if (!r || !r.ok || !AC) return;
+  if (!r.node) { r.node = AC.createMediaElementSource(r.el); r.gain = AC.createGain(); r.gain.gain.value = .0001; r.node.connect(r.gain).connect(MUS); }
+  if (curTrack && curTrack !== r) { const o = curTrack; o.gain.gain.setTargetAtTime(.0001, AC.currentTime, 1); setTimeout(() => o.el.pause(), 3500); }
+  curTrack = r; synthOn = false;
+  r.el.play().then(() => r.gain.gain.setTargetAtTime(1, AC.currentTime, 1.5)).catch(() => { synthOn = true; });
+}
+function setScene(ch) {
+  SCENE = ch; if (!AC) return;
+  const t = AC.currentTime;
+  MUS.gain.setTargetAtTime(.5, t, 1.2); AMB.gain.setTargetAtTime(.9, t, 1.5);
+  if (bed) { const old = bed; old.g.gain.setTargetAtTime(.0001, t, .8); setTimeout(() => old.src.forEach(s => s.stop()), 4000); }
+  bed = makeBed(SCN[ch]);
+  if (!nextBeat) nextBeat = t + .3;
+  const r = loadTrack(ch);
+  if (r.ok) startTrack(ch);
+  else { synthOn = true; if (curTrack) { const o = curTrack; o.gain.gain.setTargetAtTime(.0001, t, 1); setTimeout(() => o.el.pause(), 3500); curTrack = null; } }
+}
+function makeBed(S) {    // 계속 깔리는 소리: 물결(낮은 잡음이 천천히 일렁임) + 바람
+  const g = AC.createGain(); g.gain.value = .0001; g.connect(AMB); g.gain.setTargetAtTime(1, AC.currentTime, 1.5);
+  const src = [];
+  const layer = (freq, type, vol, rate) => {
+    const n = AC.createBufferSource(); n.buffer = NOISE; n.loop = true;
+    const f = AC.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = .5;
+    const lg = AC.createGain(); lg.gain.value = vol;
+    const lfo = AC.createOscillator(), lfg = AC.createGain(); lfo.frequency.value = rate; lfg.gain.value = vol * .8; lfo.connect(lfg).connect(lg.gain);
+    const lf2 = AC.createOscillator(), l2g = AC.createGain(); lf2.frequency.value = rate * .37; l2g.gain.value = freq * .35; lf2.connect(l2g).connect(f.frequency);
+    n.connect(f).connect(lg).connect(g); n.start(); lfo.start(); lf2.start(); src.push(n, lfo, lf2);
+  };
+  if (S.water) layer(420, 'lowpass', .05 * S.water, .18);
+  if (S.wind) layer(700, 'bandpass', .045, .07);
+  return { g, src };
+}
+function pluck(f, t, vol, pan) {   // 가야금 같은 뜯는 소리
+  const o = AC.createOscillator(), o2 = AC.createOscillator(), g = AC.createGain(), lp = AC.createBiquadFilter();
+  o.type = 'triangle'; o2.type = 'sine'; o.frequency.value = f; o2.frequency.value = f * 2.01;
+  lp.type = 'lowpass'; lp.frequency.setValueAtTime(f * 6, t); lp.frequency.exponentialRampToValueAtTime(f * 1.5, t + 1.2);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + 2.4);
+  const g2 = AC.createGain(); g2.gain.value = .25; o2.connect(g2).connect(lp);
+  let n = o.connect(lp).connect(g); if (AC.createStereoPanner) { const p = AC.createStereoPanner(); p.pan.value = pan; n = n.connect(p); }
+  n.connect(MUS); n.connect(VERB);
+  o.start(t); o2.start(t); o.stop(t + 2.5); o2.stop(t + 2.5);
+}
+function pad(freqs, t, dur) {      // 느리게 부풀었다 사라지는 바탕 화음
+  freqs.forEach((f, i) => {
+    const o = AC.createOscillator(), g = AC.createGain(), lp = AC.createBiquadFilter();
+    o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = (i - 1) * 6;
+    lp.type = 'lowpass'; lp.frequency.value = 520;
+    g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.022, t + dur * .4); g.gain.linearRampToValueAtTime(.0001, t + dur);
+    o.connect(lp).connect(g).connect(MUS); g.connect(VERB); o.start(t); o.stop(t + dur + .1);
+  });
+}
+const MEL = [0, 1, 2, 4, 5, 7, 4, 2];          // 5음계 안에서 걷는 가락 (PENT의 칸 번호)
+const CHORDS = [[1, 3/2, 2], [5/6, 5/4, 5/3], [2/3, 1, 4/3], [3/4, 9/8, 3/2]];
+let melPos = 0;
+function tickSound() {
+  if (!AC || AC.state !== 'running' || !soundOn()) return;
+  const t = AC.currentTime, S = SCN[SCENE], k = KEYS[SCENE], root = 196 * k;
+  while (nextBeat < t + .4) {
+    const bt = nextBeat, bar = Math.floor(beat / 8);
+    if (!synthOn) { nextBeat += TEMPO[SCENE]; beat++; continue; }
+    if (beat % 16 === 0) pad(CHORDS[bar / 2 % 4 | 0].map(r => root / 2 * r), bt, TEMPO[SCENE] * 17);
+    // 가락: 박마다 뜯을지 말지 주사위, 가끔 두 음 겹침
+    if (Math.random() < (beat % 2 ? .35 : .7)) {
+      melPos = (melPos + (Math.random() < .5 ? 1 : Math.random() < .5 ? -1 : 2) + MEL.length) % MEL.length;
+      const f = root * PENT[MEL[melPos]];
+      pluck(f, bt + (Math.random() - .5) * .03, .09, Math.random() * .6 - .3);
+      if (Math.random() < .18) pluck(f * 1.5, bt + TEMPO[SCENE] / 2, .05, .3);
+    }
+    if (S.drum && beat % 4 === 0) { tone('sine', 110, 55, bt, .5, .09, AMB); if (beat % 8 === 6) tone('sine', 150, 70, bt + TEMPO[SCENE] / 2, .3, .05, AMB); }
+    nextBeat += TEMPO[SCENE]; beat++;
+  }
+  if (S.crick && t > nextCrick) {               // 풀벌레: 높은 음이 빠르게 서너 번 떨림
+    const f = 4200 + Math.random() * 900, pan = Math.random() * 1.6 - .8, reps = 3 + (Math.random() * 3 | 0);
+    for (let i = 0; i < reps; i++) tone('sine', f, 0, t + .05 + i * .055, .035, .012 * S.crick, AMB, pan);
+    nextCrick = t + .35 + Math.random() * 1.1;
+  }
+  if (S.owl && t > nextOwl) {                   // 소쩍새: "소-쩍" 두 음, 두세 번
+    if (nextOwl) { const pan = Math.random() * 1.2 - .6, n = 2 + (Math.random() * 2 | 0), base = 1050 + Math.random() * 80;
+      for (let i = 0; i < n; i++) { const s = t + .1 + i * 1.35;
+        tone('sine', base, base * .97, s, .28, .045 * S.owl, AMB, pan).connect(VERB);
+        tone('sine', base * .86, base * .8, s + .36, .22, .04 * S.owl, AMB, pan).connect(VERB); } }
+    nextOwl = t + 14 + Math.random() * 16;
+  }
+  if (S.chime && t > nextChime) {               // 풍경: 쇠 종 여러 배음
+    if (nextChime) { const f = 1320 + Math.random() * 200; [1, 2.76, 5.4].forEach((m, i) => tone('sine', f * m, 0, t + .1, 3.2 - i, .03 / (i + 1), AMB, .4).connect(VERB)); }
+    nextChime = t + 9 + Math.random() * 12;
+  }
+  if (S.bird && t > nextBird) {                 // 새벽 새: 짧게 미끄러지는 지저귐
+    const pan = Math.random() * 1.4 - .7, f = 2600 + Math.random() * 1200, n = 3 + (Math.random() * 4 | 0);
+    for (let i = 0; i < n; i++) tone('sine', f * (1 + (i % 2) * .25), f * (1.3 - (i % 2) * .4), t + .1 + i * .11, .08, .025, AMB, pan).connect(VERB);
+    nextBird = t + 2.5 + Math.random() * 5;
+  }
+}
 
 // ---------- save ----------
 let save = { unlocked: 0, done: {}, seen: {} };
@@ -168,6 +313,7 @@ const board = $('board');
 async function load(idx) {
   const lv = LEVELS[idx];
   document.documentElement.dataset.ch = chOf(idx);
+  if (AC) setScene(chOf(idx));
   G = { idx, n: lv.n, k: lv.k, used: 0, busy: true, over: false,
         lan: new Map(lv.lanterns.map(([r,c,s,l,t]) => [r*lv.n+c, { s, l, t }])),
         rocks: new Set(lv.rocks.map(([r,c]) => r*lv.n+c)),
@@ -210,7 +356,7 @@ async function load(idx) {
   renderTaps(); renderSky(idx);
   await showNewCards(idx);
   if (G !== myG) return;
-  board.classList.remove('pre'); board.classList.add('enter');
+  board.classList.remove('pre'); board.classList.add('enter'); whoosh();
   const maxDelay = Math.max(...[...board.querySelectorAll('.rise')].map(r => parseFloat(r.style.animationDelay)));
   await sleep(Math.min(700, maxDelay + 350));
   if (G === myG) G.busy = false;
@@ -411,6 +557,8 @@ $('retry').addEventListener('click', () => { audio(); if (G) load(G.idx); });
 $('prev').addEventListener('click', () => { if (G && G.idx > 0) load(G.idx - 1); });
 $('next').addEventListener('click', () => { if (G && G.idx + 1 < LEVELS.length) load(G.idx + 1); });
 $('help').addEventListener('click', () => { audio(); openGlossary(); });
+document.querySelectorAll('.snd').forEach(b => { b.classList.toggle('off', !soundOn()); b.addEventListener('click', () => { const on = !soundOn(); setSound(on); if (on) click(); }); });
+document.addEventListener('click', e => { if (e.target.closest('button') && !e.target.closest('.snd')) click(); }, true);
 // ---------- title screen ----------
 const TITLE = $('title'), MAP = $('map');
 const TINTS = [['#FFC98A','#F08A4E','#C4452A','255,150,80','#3A2418'], ['#B4F0E0','#3FB5A6','#1C7A70','80,220,200','#16302C'], ['#F2C8F0','#B45FB0','#6E2C74','220,120,220','#2E1832'],
@@ -466,6 +614,7 @@ function floaterPop(f, sc) {
 
 function showTitle() {
   G = null; board.innerHTML = ''; $('over').classList.remove('show');
+  document.documentElement.dataset.ch = 0; if (AC) setScene(0);
   const fresh = !save.unlocked && !save.seen.intro;
   const cur = Math.min(save.unlocked, LEVELS.length - 1);
   $('tPlay').innerHTML = fresh ? '시작하기' : `이어하기 <small>${cur + 1}단계</small>`;
@@ -516,4 +665,5 @@ $('tMap').addEventListener('click', () => { audio(); mapSel = chOf(Math.min(save
 $('mapBack').addEventListener('click', () => { audio(); MAP.classList.remove('show'); });
 $('home').addEventListener('click', () => { audio(); showTitle(); });
 showTitle();
+window.__lf = { get AC() { return AC; }, get MASTER() { return MASTER; }, get MUS() { return MUS; }, get AMB() { return AMB; }, get SCENE() { return SCENE; }, get synthOn() { return synthOn; }, setScene };   // 검사용
 })();
