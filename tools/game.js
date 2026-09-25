@@ -145,7 +145,7 @@ function jing(t, vol = .55, dur = 3.6) {           // 징 「지잉~」: 낮은 
 // 국악기 녹음(sfx/gugak). 읽히면 합성 악기 대신 이것을 쓴다. 시작점은 자를 때 맞춰 두었다.
 const GUGAK = {}, GUGAK_NAMES = ['kk1','kk2','kks1','kks2','deong1','deong2','deok1','deok2','kung1','kung2','buk1','jing'];
 function loadGugak() {
-  if (!AC || GUGAK._loading) return; GUGAK._loading = true;
+  if (!AC || GUGAK._loading || FX_MODE !== 'samul') return; GUGAK._loading = true;   // 16.7: 녹음 파일은 저장소에서 뺐다(출처 미확인). samul 모드로 되돌릴 때만 불러온다
   GUGAK_NAMES.forEach(n => fetch(`sfx/gugak/${n}.mp3`).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => AC.decodeAudioData(b)).then(buf => {
     const d = buf.getChannelData(0); let pk = 0; for (let i = 0; i < d.length; i++) pk = Math.max(pk, Math.abs(d[i]));
     let i = 0; while (i < d.length && Math.abs(d[i]) < pk * .1) i++; buf._off = Math.max(0, i / buf.sampleRate - .001); GUGAK[n] = buf;
