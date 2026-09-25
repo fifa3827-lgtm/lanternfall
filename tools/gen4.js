@@ -31,39 +31,61 @@ function trace(n, L, rocks, SL, M, p, dr, dc, s, path) {
 }
 function twinOf(L, p) { const v = L.get(p); if (!v || v.length < 4) return null; for (const [q, u] of L) if (q !== p && u.length >= 4 && u[2] === 4 && u[3] === v[3]) return q; return null; }
 // 결과: {rem, per, cov}  rem -1 = 잠든 등불을 깨움(실패)
-function run(n, lan, rocks, sleep, taps, mirrors, detail) {
-  const L = new Map(); for (const [k, v] of lan) L.set(k, v.slice());
-  const SL = new Map(sleep); const M = mirrors; const cov = detail ? new Set() : null; const per = [];
-  for (const t of taps) {
-    if (!L.has(t)) { per.push(-1); continue; }
-    L.get(t)[1]--; if (L.get(t)[1] > 0) { per.push(0); continue; }
-    const first = [t]; if (L.get(t)[2] === 4) { const m = twinOf(L, t); if (m !== null) first.push(m); }
-    const sched = new Map([[0, first]]); const done = new Set(first); let w = 0, cnt = 0;
-    while (true) {
-      let any = false; for (const k of sched.keys()) if (k >= w) { any = true; break; } if (!any) break;
-      const wave = (sched.get(w) || []).filter(p => L.has(p)); sched.delete(w);
-      for (const p of wave) {
-        const v = L.get(p); L.delete(p); cnt++;
-        for (const [dr, dc] of dirsFor(v[2])) {
-          const path = detail ? [] : null; const [hit, sl] = trace(n, L, rocks, SL, M, p, dr, dc, v[0], path);
-          if (detail) for (const q of path) if (!M.has(q)) cov.add(q);
-          if (hit === null) continue;
-          if (sl) { SL.set(hit, SL.get(hit) - 1); if (SL.get(hit) <= 0) return { rem: -1, per, cov }; continue; }
-          const h = L.get(hit); h[1]--;
-          if (h[1] <= 0 && !done.has(hit)) {
-            done.add(hit); const dw = w + (h[2] === 3 ? 2 : 1); if (!sched.has(dw)) sched.set(dw, []); sched.get(dw).push(hit);
-            if (h[2] === 4) { const m = twinOf(L, hit); if (m !== null && !done.has(m)) { done.add(m); L.get(m)[1] = 0; sched.get(dw).push(m); } }
-          }
+// 탭 한 번을 상태에 적용한다. st = {L, SL, dead}. 결과 cnt(터진 수, -1 없는 등불, 0 겉종이만)
+function tapOnce(n, st, rocks, M, t, cov) {
+  const L = st.L, SL = st.SL;
+  if (!L.has(t)) return -1;
+  L.get(t)[1]--; if (L.get(t)[1] > 0) return 0;
+  const first = [t]; if (L.get(t)[2] === 4) { const m = twinOf(L, t); if (m !== null) first.push(m); }
+  const sched = new Map([[0, first]]); const done = new Set(first); let w = 0, cnt = 0;
+  while (true) {
+    let any = false; for (const k of sched.keys()) if (k >= w) { any = true; break; } if (!any) break;
+    const wave = (sched.get(w) || []).filter(p => L.has(p)); sched.delete(w);
+    for (const p of wave) {
+      const v = L.get(p); L.delete(p); cnt++;
+      for (const [dr, dc] of dirsFor(v[2])) {
+        const path = cov ? [] : null; const [hit, sl] = trace(n, L, rocks, SL, M, p, dr, dc, v[0], path);
+        if (cov) for (const q of path) if (!M.has(q)) cov.add(q);
+        if (hit === null) continue;
+        if (sl) { SL.set(hit, SL.get(hit) - 1); if (SL.get(hit) <= 0) { st.dead = true; return cnt; } continue; }
+        const h = L.get(hit); h[1]--;
+        if (h[1] <= 0 && !done.has(hit)) {
+          done.add(hit); const dw = w + (h[2] === 3 ? 2 : 1); if (!sched.has(dw)) sched.set(dw, []); sched.get(dw).push(hit);
+          if (h[2] === 4) { const m = twinOf(L, hit); if (m !== null && !done.has(m)) { done.add(m); L.get(m)[1] = 0; sched.get(dw).push(m); } }
         }
       }
-      w++;
     }
-    per.push(cnt);
+    w++;
   }
-  return { rem: L.size, per, cov };
+  return cnt;
+}
+const cloneSt = st => { const L = new Map(); for (const [k, v] of st.L) L.set(k, v.slice()); return { L, SL: new Map(st.SL), dead: false }; };
+// 결과: {rem, per, cov}  rem -1 = 잠든 등불을 깨움(실패)
+function run(n, lan, rocks, sleep, taps, mirrors, detail) {
+  const st = { L: new Map(), SL: new Map(sleep), dead: false }; for (const [k, v] of lan) st.L.set(k, v.slice());
+  const cov = detail ? new Set() : null; const per = [];
+  for (const t of taps) { per.push(tapOnce(n, st, rocks, mirrors, t, cov)); if (st.dead) return { rem: -1, per, cov }; }
+  return { rem: st.L.size, per, cov };
+}
+// k번 탭의 모든 순서를 깊이 우선으로 돌며 cb(seq, rem)을 부른다. 앞부분 상태를 다시 쓰므로 순열을 하나하나 처음부터 돌리는 것보다 k배쯤 빠르다.
+// 이미 터진 등불을 다시 누르는 순서는 건너뛴다(그런 답은 k-1번 답이 있다는 뜻이라 어차피 버린다). 깨우면(dead) 그 가지는 rem 99.
+function enumerate(n, lan, rocks, sleep, k, mir, cb) {
+  const root = { L: new Map(), SL: new Map(sleep), dead: false }; for (const [kk, v] of lan) root.L.set(kk, v.slice());
+  const seq = [];
+  const rec = (st, depth) => {
+    if (depth === k) { cb(seq, st.L.size); return; }
+    for (const t of [...st.L.keys()]) {
+      const nx = cloneSt(st); tapOnce(n, nx, rocks, mir, t, null); seq.push(t);
+      if (nx.dead) cb(seq, 99);
+      else if (nx.L.size === 0) { cb(seq, 0); }               // 이미 다 터졌으면 남은 탭은 의미 없다 → 짧은 답이 있는 것
+      else rec(nx, depth + 1);
+      seq.pop();
+    }
+  };
+  rec(root, 0);
 }
 function* seqs(keys, k) { if (k === 1) { for (const t of keys) yield [t]; return; } const idx = new Array(k).fill(0); const m = keys.length; while (true) { yield idx.map(i => keys[i]); let j = k - 1; while (j >= 0 && ++idx[j] === m) { idx[j] = 0; j--; } if (j < 0) return; } }
-function solutions(n, lan, rocks, sleep, k, mir) { const out = []; const keys = [...lan.keys()]; for (const s of seqs(keys, k)) if (run(n, lan, rocks, sleep, s, mir).rem === 0) out.push(s); return out; }
+function solutions(n, lan, rocks, sleep, k, mir) { const out = []; enumerate(n, lan, rocks, sleep, k, mir, (seq, rem) => { if (rem === 0 && seq.length === k) out.push(seq.slice()); }); return out; }
 const setKey = s => s.slice().sort((a, b) => a - b).join(',');
 const unique = sols => new Set(sols.map(setKey)).size === 1;
 
@@ -140,7 +162,7 @@ function hardEnough(n, lan, rocks, sl, mir, k, S) {
   const keys = [...lan.keys()];
   if (k >= 2) {
     const best = new Map();
-    for (const s of seqs(keys, k)) { const key = setKey(s); let r = run(n, lan, rocks, sl, s, mir).rem; if (r < 0) r = 99; if (!best.has(key) || r < best.get(key)) best.set(key, r); }
+    enumerate(n, lan, rocks, sl, k, mir, (seq, rem) => { if (seq.length !== k) return; const key = setKey(seq); if (!best.has(key) || rem < best.get(key)) best.set(key, rem); });
     let near = 0; for (const v of best.values()) if (v >= 1 && v <= 2) near++;
     if (near < (S.near ?? 3)) return false;
   }

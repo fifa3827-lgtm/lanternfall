@@ -5,6 +5,7 @@ module.exports = function regions(n, kind, cnts, types = [[], [], []], pids) {
   let R;
   if (kind === 'rows') R = [cells((r) => r < b1 + 1), cells((r) => r >= b1 && r < b2 + 1), cells((r) => r >= b2 - 1)];
   else if (kind === 'cols') R = [cells((r, c) => c < b1 + 1), cells((r, c) => c >= b1 && c < b2 + 1), cells((r, c) => c >= b2 - 1)];
+  else if (kind === 'quad') { const h = Math.floor(n / 2); R = [cells((r, c) => r <= h && c <= h), cells((r, c) => r <= h && c >= h - 1), cells((r, c) => r >= h - 1 && c <= h), cells((r, c) => r >= h - 1 && c >= h - 1)]; }   // 네 구역(네 번 판)
   else R = [cells((r, c) => r + c < n - 1), cells((r, c) => Math.abs(r + c - (n - 1)) <= 1), cells((r, c) => r + c > n - 1)];
   return R.map((cs, i) => ({ cells: cs, cnt: cnts[i], types: types[i], pid: pids ? pids[i] : 0 }));
 };
